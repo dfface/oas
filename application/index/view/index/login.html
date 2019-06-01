@@ -1,0 +1,52 @@
+{extend name="./templates/base.html"/}
+
+{block name="body"}
+<div class="container">
+    <div class="row justify-content-center">
+        <form id="login" action="javascript:"  method="post">
+            <div class="text-center my-5">
+                <img class="my-5 img-fluid" src="/images/logo.png" alt="" style="width:auto; height: auto; max-width: 70%; max-height: 70%">
+                <h1 class="h3 mb-3 font-weight-normal">欢迎登录</h1>
+            </div>
+
+            <div class="form-label-group mb-3">
+                <label for="id">用户名</label>
+                <input type="text" id="id" name="id" class="form-control" placeholder="请输入用户名" autofocus>
+            </div>
+
+            <div class="form-label-group mb-3">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="请输入密码">
+            </div>
+
+            <button id="do_login" class="btn btn-lg btn-primary btn-block" type="submit">登录</button>
+            <button class="btn btn-lg btn-primary btn-block" type="reset">重置</button>
+            <p class="mt-5 mb-3 text-muted text-center">&copy; 2018-2019</p>
+        </form>
+    </div>
+</div>
+<script>
+    layui.use(['layer','element'],function () {
+        var layer = layui.layer;
+        $('#do_login').click(function () {
+            form_data =  $('form').serializeArray();
+            var data = {};
+            $.each(form_data, function () {
+                data[this.name] = this.value;
+            });
+            $.post("{:url('index/Index/doLogin')}",JSON.parse(JSON.stringify(data)),function (bk_data) {
+                if (bk_data.code === 200) {
+                    layer.msg(bk_data.msg, {icon: 6});
+                    window.location.replace("{:url('index/Index/index')}");
+                }
+                else {
+                    layer.msg(bk_data.msg, {icon: 5});
+                }
+            });
+        });
+    })
+</script>
+{/block}
+{block name="foot"}
+
+{/block}

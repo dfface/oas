@@ -1,0 +1,142 @@
+{extend name="./templates/base.html"/}
+{block name="import"}
+{css href="/static/bootstrap/css/bootstrap.css"}
+{css href="/static/carousel.css"}
+{css href="/static/layui/css/layui.css"}
+{css href="/static/editor/css/editormd.preview.css"}
+{css href="/static/editor/css/editormd.min.css"}
+{js href="/static/jquery-3.4.1.js"}
+{js href="/static/bootstrap/js/bootstrap.js"}
+{js href="/static/popper.min.js"}
+{js href="/static/layui/layui.js"}
+{js href="/static/editor/editormd.js"}
+{js href="/static/editor/lib/marked.min.js"}
+{js href="/static/editor/lib/prettify.min.js"}
+{/block}
+{block name="body"}
+<div class="container my-5">
+    <div class="row pt-3 justify-content-center">
+        <input type="hidden" name="search_type" id="search_type" value="{$search_type}"/>
+        <input type="hidden" name="search_value" id="search_value" value="{$search_value}"/>
+        <h1 class="mt-3" style="font-family: zhanKuaiFont;">查找结果</h1>
+    </div>
+    <div class="row pt-3 justify-content-center">
+        {// 放置所有回复内容}
+        <div class="row justify-content-between pt-1">
+            <div id="result" class="col"></div>
+        </div>
+        {// 放置分页}
+        {if $count != 0}
+        <div class="row justify-content-center pt-1">
+            <div id="page"></div>
+        </div>
+        {else /}
+        <div class="row justify-content-center align-items-center pt-1">
+            <img src="/images/not_found.gif" alt="没有找到结果！"/>
+            <p>抱歉没有找到结果！</p>
+        </div>
+        {/if}
+    </div>
+</div>
+<script>
+    // 加载回复
+    layui.use('laypage',function () {
+        var laypage =  layui.laypage;
+        var search_type = $('#search_type').val();
+        var search_value = $('#search_value').val();
+        console.log(search_type);
+        console.log(search_value);
+        if (search_type === 'reply') {
+            laypage.render({
+                elem: 'page',
+                count: {$count},
+                theme: '#307cf6',
+                jump: function (obj, first) {
+                    $.post("{:url('index/Index/searchPage')}", {"search_type": search_type, "search_value": search_value ,"page": obj.curr}, function (data) {
+                        // 这里还需要复杂的控制，比如考虑二次回复，还需要回复的按钮等
+                        var html = "";
+                        data.data.forEach(function (value, index) {
+                            // 显示回复
+                            if(value.status === 1) {
+                                html += ("\n<div class=\"card my-3 d-lg-inline-flex\">\n" +
+                                    "<span class='m-3 text-muted'>编号：" + (index+1) + "</span>" +
+                                    "                <span class=\"m-3 h6\"  id=\"s" + value.id +"\" >"+"<img src=\""+value.user_avatar+"\" alt=\"\" class=\"rounded-circle mx-3\" width=\"50px\" height=\"50px\">"
+                                    + value.user_name + "<span class=\"m-3\">" +  "<i class=\"layui-icon layui-icon-auz text-success\" style=\"font-size: 1.5rem; font-family: zhanKuaiFont;\">已采纳</i>" + "</span></span>\n" +
+                                    "                <div id=\"r" + value.id +"\">" + "<textarea style=\"display:none;\">"+ value.content +"</textarea>" +"</div>\n" +
+                                    "                <p class=\"card-text mx-3\" style=\"color:#d2d2d2\">回答时间：" +value.create_time + "</p>\n")
+
+                            }
+                            else {
+                                html += ("\n<div class=\"card my-3 d-lg-inline-flex\">\n" +
+                                    "<span class='m-3 text-muted'>编号：" + (index+1) + "</span>" +
+                                    "                <span class=\"m-3 h6\"  id=\"s" + value.id +"\" >"+"<img src=\""+value.user_avatar+"\" alt=\"\" class=\"rounded-circle mx-3\" width=\"50px\" height=\"50px\">" + value.user_name +  "</span>\n" +
+                                    "                <div id=\"r" + value.id +"\">" + "<textarea style=\"display:none;\">"+ value.content +"</textarea>" +"</div>\n" +
+                                    "                <p class=\"card-text mx-3\" style=\"color:#d2d2d2\">回答时间：" +value.create_time + "</p>\n")
+                            }
+                            // 加入按钮组
+                            html += ("<div class=\"btn-toolbar m-3 justify-content-end\" role=\"toolbar\" aria-label=\"Toolbar with button groups\">");
+                            html += ("<div class=\"btn-group\" role=\"group\" aria-label=\"btn group\">");
+                            // 查看详情
+                            html += ("<button class=\"btn btn-primary btn-sm\">"+ "<a class='text-white' target='_blank' href=\"{:url('index/Index/questionInspect')}?question_id="+ value.que_id +"\">" +"查看详情</a></button>\n");
+                            // 收尾
+                            html += "                  </div>\n";
+                            html += "            </div>\n";
+                            html += "       </div>\n";
+                        });
+                        $('#result').html(html);
+                        data.data.forEach(function (value, index) {
+                            editormd.markdownToHTML('r'+value.id, {});
+                        })
+                    });
+                }
+            });
+        }
+        // 否则就是问题 question
+        else {
+            laypage.render({
+                elem: 'page',
+                count: {$count},
+                theme: '#307cf6',
+                jump: function (obj, first) {
+                    $.post("{:url('index/Index/searchPage')}", {"search_type": search_type, "search_value": search_value ,"page": obj.curr}, function (data) {
+                        // 这里还需要复杂的控制，比如考虑二次回复，还需要回复的按钮等
+                        var html = "";
+                        data.data.forEach(function (value, index) {
+                            // 显示回复
+                            if(value.status === 1) {
+                                html += ("\n<div class=\"card my-3 d-lg-inline-flex\">\n" +
+                                    "<span class='m-3 text-muted'>编号：" + (index+1) + "</span>" +
+                                    "                <span class=\"m-3 h6\"  id=\"s" + value.id +"\" >"+"<img src=\""+value.user_avatar+"\" alt=\"\" class=\"rounded-circle mx-3\" width=\"50px\" height=\"50px\">"
+                                    + value.user_name + "<span class=\"m-3\">" +  "<i class=\"layui-icon layui-icon-ok text-success\" style=\"font-size: 1.5rem; font-family: zhanKuaiFont;\">已解决</i>" + "</span></span>\n" +
+                                    "                <div id=\"r" + value.id +"\">" + "<textarea style=\"display:none;\">"+ value.content +"</textarea>" +"</div>\n" +
+                                    "                <p class=\"card-text mx-3\" style=\"color:#d2d2d2\">创建时间：" +value.create_time + "</p>\n")
+
+                            }
+                            else {
+                                html += ("\n<div class=\"card my-3 d-lg-inline-flex\">\n" +
+                                    "<span class='m-3 text-muted'>编号：" + (index+1) + "</span>" +
+                                    "                <span class=\"m-3 h6\"  id=\"s" + value.id +"\" >"+"<img src=\""+value.user_avatar+"\" alt=\"\" class=\"rounded-circle mx-3\" width=\"50px\" height=\"50px\">" + value.user_name +  "</span>\n" +
+                                    "                <div id=\"r" + value.id +"\">" + "<textarea style=\"display:none;\">"+ value.content +"</textarea>" +"</div>\n" +
+                                    "                <p class=\"card-text mx-3\" style=\"color:#d2d2d2\">创建时间：" +value.create_time + "</p>\n")
+                            }
+                            // 加入按钮组
+                            html += ("<div class=\"btn-toolbar m-3 justify-content-end\" role=\"toolbar\" aria-label=\"Toolbar with button groups\">");
+                            html += ("<div class=\"btn-group\" role=\"group\" aria-label=\"btn group\">");
+                            // 查看详情
+                            html += ("<button class=\"btn btn-primary btn-sm\">"+ "<a class='text-white' target='_blank' href=\"{:url('index/Index/questionInspect')}?question_id="+ value.id +"\">" +"查看详情</a></button>\n");
+                            // 收尾
+                            html += "                  </div>\n";
+                            html += "            </div>\n";
+                            html += "       </div>\n";
+                        });
+                        $('#result').html(html);
+                        data.data.forEach(function (value, index) {
+                            editormd.markdownToHTML('r'+value.id, {});
+                        })
+                    });
+                }
+            });
+        }
+    });
+</script>
+{/block}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>OAS在线答疑系统</title>
+    {block name="import"}
+    {css href="/static/bootstrap/css/bootstrap.css"}
+    {css href="/static/carousel.css"}
+    {css href="/static/layui/css/layui.css"}
+    {js href="/static/jquery-3.4.1.js"}
+    {js href="/static/bootstrap/js/bootstrap.js"}
+    {js href="/static/popper.min.js"}
+    {js href="/static/layui/layui.js"}
+    {/block}
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+
+        @font-face
+        {
+            font-family: zhanWeiFont;
+            src: url('/static/fonts/zhanwei-bold.otf');
+            font-style: normal;
+            font-weight: normal;
+        }
+
+        @font-face
+        {
+            font-family: zhanKuaiFont;
+            src: url('/static/fonts/zhankuai-bold.ttf');
+            font-style: normal;
+            font-weight: normal;
+        }
+    </style>
+</head>
+
+<body>
+{block name="head"}{include file="./templates/head.html"/}{/block}
+{block name="body"}页中{/block}
+{block name="foot"}{include file="./templates/foot.html"/}{/block}
+</body>
+</html>

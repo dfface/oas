@@ -1,0 +1,83 @@
+{extend name="./templates/base.html"/}
+{block name="head"}
+{include file="./templates/head.html"/}
+{/block}
+{block name="body"}
+<div class="container my-5">
+    <div class="row justify-content-center my-5">
+        <div class="col-4 my-5">
+            <div class="text-center">
+                <img class=" img-fluid rounded-circle" src="{:session('avatar')}" alt="" style="width: 285px; height: 285px">
+                <h1 class="h3 mt-4 font-weight-normal" style="font-family: zhanKuaiFont">{:session('name')}</h1>
+                <hr class="">
+                <button id="avatarUpload" class="btn btn-primary btn-block" type="submit"><i class="layui-icon">&#xe67c;</i>上传头像</button>
+            </div>
+        </div>
+        <div class="col-8 my-5">
+            <form class="form-signin" action="javascript:" method="post">
+                <div class="form-label-group mb-3">
+                    <label for="password_origin">原密码</label>
+                    <input type="password" id="password_origin" name="password_origin" class="form-control" placeholder="请输入原始密码" autofocus>
+                </div>
+                <div class="form-label-group mb-3">
+                    <label for="password">新密码</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="请输入新密码">
+                </div>
+                <div class="form-label-group mb-3">
+                    <label for="password_confirm">确认密码</label>
+                    <input type="password" id="password_confirm" name="password_confirm" class="form-control" placeholder="请再次输入新密码">
+                </div>
+                <div class="form-label-group mb-3">
+                    <label for="email">新邮箱</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="当前邮箱：{:session('email')}">
+                </div>
+
+                <button id="doInfoModify" class="btn btn-lg btn-primary btn-block" type="submit">提交</button>
+                <button class="btn btn-lg btn-primary btn-block" type="reset">重置</button>
+            </form>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <p class="mt-5 mb-3 text-muted text-center">&copy; 2018-2019</p>
+    </div>
+</div>
+<script>
+    layui.use(['layer','element','upload'],function () {
+        var layer = layui.layer;
+        var upload = layui.upload;
+        upload.render({
+            elem: '#avatarUpload',
+            url: "{:url('index/Index/avatarUpload')}",
+            field: 'avatar',
+            done: function (res) {
+                if (res.code === 200) {
+                    window.location.reload();
+                }
+                else {
+                    layer.msg(res.msg, {icon: 5});
+                }
+            },
+            error: function (res) {
+                layer.msg('未知错误！', {icon: 5});
+            }
+        });
+        $('#doInfoModify').click(function () {
+            var data = {};
+            $.each($('form').serializeArray(),function () {
+                data[this.name] = this.value;
+            });
+            $.post("{:url('index/Index/doInfoModify')}",JSON.parse(JSON.stringify(data)),function (bk_data) {
+                if (bk_data.code === 200) {
+                    window.location.reload();
+                }
+                else {
+                    layer.msg(bk_data.msg, {icon: 5});
+                }
+            });
+        });
+    })
+</script>
+{/block}
+{block name="foot"}
+{// 修改资料的页脚不应有任何东西}
+{/block}

@@ -1,0 +1,212 @@
+{extend name="./templates/base.html"/}
+{block name="import"}
+{css href="/static/bootstrap/css/bootstrap.css"}
+{css href="/static/carousel.css"}
+{css href="/static/layui/css/layui.css"}
+{css href="/static/editor/css/editormd.preview.css"}
+{css href="/static/editor/css/editormd.min.css"}
+{js href="/static/jquery-3.4.1.js"}
+{js href="/static/bootstrap/js/bootstrap.js"}
+{js href="/static/popper.min.js"}
+{js href="/static/layui/layui.js"}
+{js href="/static/editor/editormd.js"}
+{js href="/static/editor/lib/marked.min.js"}
+{js href="/static/editor/lib/prettify.min.js"}
+{/block}
+{block name="head"}
+{include file="./templates/head.html"/}
+{/block}
+{block name="body"}
+<div class="container my-5">
+    <div class="row justify-content-center pt-5">
+        <div class="col">
+            <div id="question" class="card">
+                <div class="card-header">
+                    <i class="layui-icon layui-icon-file-b mx-1" style="font-size: 1rem;"></i>问题详情
+                    <p class="card-tilte text-center h2">{if $status == 1}<span class="text-success mx-3"> <i class="layui-icon layui-icon-ok" style="font-size: 2.5rem"></i>已解决</span>{/if}{$title}</p>
+                </div>
+                <div class="card-body">
+                    <div class="card-text" id="editor-view">
+                        <textarea style="display:none;">{$content}</textarea>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row justify-content-sm-between">
+                        <span id="question_id" class="card-text" hidden>{$question_id}</span>
+                        <span class="card-text">阅读量：{$read_count}</span>
+                        <span class="card-text">创建时间：{$create_time}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button id="to_reply_btn" type="button" class="btn btn-primary mt-3"><i class="layui-icon layui-icon-edit mx-1" style="font-size: 1rem;"></i>我来回答</button>
+    {// 放置所有回复内容}
+    <div class="row justify-content-between pt-1">
+        <div id="reply" class="col"></div>
+    </div>
+    {// 放置分页}
+    <div class="row justify-content-center pt-1">
+        <div id="reply_page"></div>
+    </div>
+    {// 放置我来回答编辑框}
+    <div class="row justify-content-between pt-1">
+        <div id="to_reply" class="col">
+            <form id="do_reply" action="javascript:" method="post">
+                <div class="form-group">
+                    <label for="editor"></label>
+                    <div id="editor">
+                        <textarea style="display:none;">请输入回答的内容</textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button id="do_reply_btn" class="btn btn-primary"><i class="layui-icon layui-icon-release mx-1" style="font-size: 1rem;"></i>提交</button>
+                    <button id="scroll_top" class="btn btn-primary"><i class="layui-icon layui-icon-up mx-1" style="font-size: 1rem;"></i>回到顶部</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        var view = editormd.markdownToHTML('editor-view', {});
+
+        // 加载回复
+        layui.use('laypage',function () {
+            var laypage =  layui.laypage;
+            var question_id = $('#question_id').text();
+            console.log(question_id);
+            laypage.render({
+                elem: 'reply_page',
+                count: {$replies_count},
+                theme: '#307cf6',
+                jump: function (obj, first) {
+                    $.post("{:url('index/Index/repliesPage')}", {"question_id": question_id, "page": obj.curr}, function (data) {
+                        console.log(data);
+                        // 这里还需要复杂的控制，比如考虑二次回复，还需要回复的按钮等
+                        var html = "";
+                        data.data.forEach(function (value, index) {
+                            // 显示回复
+                            if(value.status === 1) {
+                                html += ("\n<div class=\"card my-3 d-lg-inline-flex\">\n" +
+                                    "                <span class=\"m-3 h6\"  id=\"s" + value.id +"\" >"+"<img src=\""+value.user_avatar+"\" alt=\"\" class=\"rounded-circle mx-3\" width=\"50px\" height=\"50px\">"
+                                    + value.user_name + "<span class=\"m-3\">" +  "<i class=\"layui-icon layui-icon-auz text-success\" style=\"font-size: 1.5rem; font-family: zhanKuaiFont;\">已采纳</i>" + "</span></span>\n" +
+                                    "                <div id=\"r" + value.id +"\">" + "<textarea style=\"display:none;\">"+ value.content +"</textarea>" +"</div>\n" +
+                                    "                <p class=\"card-text mx-3\" style=\"color:#d2d2d2\">回答时间：" +value.create_time + "</p>\n")
+
+                            }
+                            else {
+                                html += ("\n<div class=\"card my-3 d-lg-inline-flex\">\n" +
+                                    "                <span class=\"m-3 h6\"  id=\"s" + value.id +"\" >"+"<img src=\""+value.user_avatar+"\" alt=\"\" class=\"rounded-circle mx-3\" width=\"50px\" height=\"50px\">" + value.user_name +  "</span>\n" +
+                                    "                <div id=\"r" + value.id +"\">" + "<textarea style=\"display:none;\">"+ value.content +"</textarea>" +"</div>\n" +
+                                    "                <p class=\"card-text mx-3\" style=\"color:#d2d2d2\">回答时间：" +value.create_time + "</p>\n")
+                            }
+                            // 加入按钮组
+                            html += ("<div class=\"btn-toolbar m-3 justify-content-end\" role=\"toolbar\" aria-label=\"Toolbar with button groups\">");
+                            html += ("<div class=\"btn-group\" role=\"group\" aria-label=\"btn group\">");
+                            // 学生可以采纳答案
+                            var role = parseInt("{:session('role')}");
+                            if( role === 0 && value.status === 0) {
+                                html += ("<button type=\"button\" class=\"btn btn-outline-primary btn-sm\" id=\"a" + value.id +"\" name='adopt'"+ " data-toggle=\"tooltip\" data-placement=\"top\" title=\"采纳答案\">"+ "<i class=\"layui-icon layui-icon-ok-circle mx-1\" style=\"font-size: 1rem;\"></i>" + "</button>");
+                            }
+                            // 点赞、拍砖
+                            html += ("<button type=\"button\" class=\"btn btn-outline-success btn-sm\"  id=\"l" + value.id +"\" name='like'>" + value.like_count + "<i class=\"layui-icon layui-icon-praise mx-1\" style=\"font-size: 1rem;\"></i>" +"</button>");
+                            html += ("<button type=\"button\" class=\"btn btn-outline-danger btn-sm\"  id=\"d" + value.id +"\" name='dislike'>" + value.dislike_count  + "<i class=\"layui-icon layui-icon-tread mx-1\" style=\"font-size: 1rem;\"></i>" +"</button>");
+                            // 收尾
+                            html += "                  </div>\n";
+                            html += "            </div>\n";
+                            html += "       </div>\n";
+                        });
+                        $('#reply').html(html);
+                        data.data.forEach(function (value, index) {
+                            editormd.markdownToHTML('r'+value.id, {});
+                        })
+                    });
+                }
+            })
+        });
+        // 初始化编辑器
+        var editor = editormd("editor", {
+            // width: "100%",
+            height: "400px",
+            // markdown: "xxxx",     // dynamic set Markdown text
+            path: "/static/editor/lib/",  // Autoload modules mode, codemirror, marked... dependents libs path
+            mode: "gfm",
+            emoji: true,
+            // tex : true,
+            // flowChart : true,
+            // sequenceDiagram : true,
+            // tocm : true,
+            // tocDropdown : true,
+            imageUpload: true,
+            imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+            imageUploadURL: "{:url('index/Index/imageUpload')}",
+        });
+        // 提交回复
+        $('#do_reply_btn').click(function () {
+            var que_id = $('#question_id').text();
+            var content = editor.getMarkdown();
+            var data = {"que_id": que_id, "content": content};
+            console.log(data);
+            $.post("{:url('index/Index/replySubmit')}", data,function (back_data) {
+                if(back_data.code === 200){
+                    layui.use('layer',function () {
+                        var layer = layui.layer;
+                        layer.msg(back_data.msg, {icon: 6});
+                    });
+                    window.location.reload();
+                }
+                else{
+                    layui.use('layer',function () {
+                        var layer = layui.layer;
+                        layer.msg(back_data.msg, {icon: 5});
+                    });
+                }
+            });
+        });
+    });
+    $('#to_reply_btn').click(function () {
+        $('html, body').animate({
+            scrollTop: $('#to_reply').offset().top
+        }, 1000);
+    });
+    // 按钮组的操作
+    $('#reply').on('click',':button',function () {
+        var que_id = $('#question_id').text();
+        // 获取该按钮对象
+        var btn = $(this);
+        // 获取点赞、拍砖、采纳等的id
+        var id_type = btn.attr('id');
+        var id = btn.attr('id').slice(1);
+        // 点赞 l 拍砖 d 采纳 a
+        var type = btn.attr('id').slice(0,1);
+        if (type === 'l') {
+            $.post("{:url('index/Index/like')}",{"rep_id": id},function (data) {
+                $('#'+id_type).html(data.data + "<i class=\"layui-icon layui-icon-praise mx-1\" style=\"font-size: 1rem;\"></i>");
+            });
+        }
+        else if (type === 'd') {
+            $.post("{:url('index/Index/dislike')}",{"rep_id": id},function (data) {
+                $('#'+id_type).html(data.data + "<i class=\"layui-icon layui-icon-tread mx-1\" style=\"font-size: 1rem;\"></i>");
+            });
+        }
+        else if (type === 'a') {
+            $.post("{:url('student/Index/adopt')}",{"rep_id": id,"que_id": que_id},function (data) {
+                console.log(data);
+                // 选择用户栏
+                var  user = $('#'+'s'+id);
+                user.append("<span class=\"m-3\">" +  "<i class=\"layui-icon layui-icon-auz text-success\" style=\"font-size: 1.5rem; font-family: zhanKuaiFont;\">已采纳</i>" + "</span>").hide();
+                user.fadeIn();
+                $('#'+id_type).hide();
+            });
+        }
+    });
+    $('#scroll_top').click(function() {
+        $('html,body').animate({
+            scrollTop: '0px'
+        }, 1000);
+    });
+</script>
+{/block}
+{block name="foot"}
+{/block}
