@@ -86,7 +86,7 @@ class Index extends Controller
                     $user->last_login_time = date('Y-m-d H:i:s');
                     $user->save();
                 }
-                $result = ["code" => SUCCESS, "msg" =>  "登录成功！"];
+                $result = ["code" => SUCCESS, "msg" =>  "登录成功！", "data" => session('role_name')];
             }
             else{
                 $result = ["code" => FAILURE, "msg" => "密码错误！"];

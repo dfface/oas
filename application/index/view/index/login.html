@@ -37,7 +37,7 @@
             $.post("{:url('index/Index/doLogin')}",JSON.parse(JSON.stringify(data)),function (bk_data) {
                 if (bk_data.code === 200) {
                     layer.msg(bk_data.msg, {icon: 6});
-                    window.location.replace("{:url('index/Index/index')}");
+                    window.location.replace("/"+bk_data.data+"/Index/index");
                 }
                 else {
                     layer.msg(bk_data.msg, {icon: 5});
