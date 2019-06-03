@@ -1,7 +1,6 @@
 /.idea
 /.vscode
 /vendor
-/config
 /extend
 /route
 /runtime

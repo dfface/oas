@@ -324,11 +324,18 @@ class Index extends Controller
      */
     public function like() {
         if ($rep_id = $this->request->param('rep_id')) {
-            $reply = Reply::get($rep_id);
-            $reply->like_count += 1;
-            $reply->save();
-            $like_count = $reply->like_count;
-            $result = ["code" => SUCCESS, "msg" => "成功", "data" => $like_count];
+            // 进行判断 是否超过一个小时
+            if(Session::has('l'.$rep_id)) {
+                $result = ["code" => FAILURE, "msg" => "一小时之内不许再点赞！"];
+            }
+            else {
+                Session::set('l'.$rep_id,'');
+                $reply = Reply::get($rep_id);
+                $reply->like_count += 1;
+                $reply->save();
+                $like_count = $reply->like_count;
+                $result = ["code" => SUCCESS, "msg" => "成功", "data" => $like_count];
+            }
         }
         else {
             $result = ["code" => FAILURE, "msg" => "没有收到id！"];
@@ -344,11 +351,18 @@ class Index extends Controller
      */
     public function dislike() {
         if ($rep_id = $this->request->param('rep_id')) {
-            $reply = Reply::get($rep_id);
-            $reply->dislike_count += 1;
-            $reply->save();
-            $dislike_count = $reply->dislike_count;
-            $result = ["code" => SUCCESS, "msg" => "成功", "data" => $dislike_count];
+            // 进行判断 是否超过一个小时
+            if(Session::has('d'.$rep_id)) {
+                $result = ["code" => FAILURE, "msg" => "一小时之内不许再拍砖！"];
+            }
+            else {
+                Session::set('d'.$rep_id,'');
+                $reply = Reply::get($rep_id);
+                $reply->dislike_count += 1;
+                $reply->save();
+                $dislike_count = $reply->dislike_count;
+                $result = ["code" => SUCCESS, "msg" => "成功", "data" => $dislike_count];
+            }
         }
         else {
             $result = ["code" => FAILURE, "msg" => "没有收到id！"];
