@@ -34,9 +34,17 @@ class Index extends Controller
      * Method index
      * @purpose 学生主页
      * @return mixed
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function index() {
         $this->roleCheck();
+        $id = Session::get('id');
+        $solved_num = Question::where('stu_id',$id)->where('status','1')->select()->count();
+        $asked_num = Question::where('stu_id', $id)->count();
+        $this->assign('solved_num', $solved_num);
+        $this->assign('asked_num', $asked_num);
         return $this->fetch();
     }
 

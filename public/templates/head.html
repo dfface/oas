@@ -54,6 +54,8 @@
         </div>
     </nav>
 </header>
+{if session('?name')}
+{else /}
 <script>
     $('#login').click(function () {
         window.location.replace("{:url('index/Index/login')}");
@@ -62,3 +64,4 @@
         window.location.replace("{:url('index/Index/search')}");
     });
 </script>
+{/if}

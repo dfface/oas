@@ -1,42 +1,29 @@
 {extend name="./templates/base.html"/}
 
+
 {block name="body"}
-<ul class="layui-timeline justify-content-center" style="margin: 6rem">
-    <li class="layui-timeline-item">
-        <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
-        <div class="layui-timeline-content layui-text">
-            <h3 class="layui-timeline-title"> 5月17日</h3>
-            <p>
-                本项目进入编程阶段
-            </p>
-        </div>
-    </li>
-    <li class="layui-timeline-item">
-        <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
-        <div class="layui-timeline-content layui-text">
-            <h3 class="layui-timeline-title"> 5月19日</h3>
-            <p>
-                对需求进一步修改
-            </p>
-        </div>
-    </li>
-    <li class="layui-timeline-item">
-        <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
-        <div class="layui-timeline-content layui-text">
-            <h3 class="layui-timeline-title"> 5月20日</h3>
-            <p>
-                经需求更改后继续编写代码
-            </p>
-        </div>
-    </li>
-    <li class="layui-timeline-item">
-        <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
-        <div class="layui-timeline-content layui-text">
-            <h3 class="layui-timeline-title"> 5月27日</h3>
-            <p>
-                分工进一步明确
-            </p>
-        </div>
-    </li>
-</ul>
+
+<div class="jumbotron jumbotron-fluid my-5 bg-white">
+    <div class="container">
+        <h1 class="display-4">问答统计</h1>
+        <p class="lead">
+            以下是关于你的问题与解答情况
+        </p>
+        <hr class="my-4">
+            <div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="progress">
+                <div class="layui-progress-bar" lay-percent="{$solved_num}/{$asked_num}" style="background-color: #307cf6"></div>
+            </div>
+        <hr class="my-4">
+        <p>欢迎你，{:session('name')}，上次登录：{:session('last_login_time')}</p>
+    </div>
+</div>
+
+
+
+
+<script>
+    layui.use(['element'],function () {
+        var element = layui.element;
+    });
+</script>
 {/block}
