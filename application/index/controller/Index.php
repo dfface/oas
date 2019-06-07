@@ -2,6 +2,7 @@
 
 namespace app\index\controller;
 
+use app\common\controller\Mailer;
 use app\common\model\Course;
 use app\common\model\File;
 use app\common\model\Question;
@@ -10,15 +11,17 @@ use think\Controller;
 use think\facade\Session;
 use app\common\model\User;
 use think\Image;
+use think\Request;
 
 class Index extends Controller
 {
     /**
-     * Method idCheck
-     * @purpose 通过检查id的存在而判断登录与否
+     * Method test
+     * @purpose 测试一个名为test.html的网页，用于书写邮件格式
+     * @return mixed
      */
-    public function idCheck() {
-        // 暂时不需要
+    public function test() {
+        return $this->fetch();
     }
 
     /**
@@ -636,5 +639,74 @@ class Index extends Controller
 
         ]);
         dump($user->id);
+    }
+
+    /**
+     * Method passwordReset
+     * @purpose
+     * @return mixed
+     */
+    public function passwordReset() {
+        return $this->fetch();
+    }
+
+    public function codeGet() {
+        $email = $this->request->param('email');
+        $id = $this->request->param('id');
+        $user = User::get($id);
+        if (!$user) {
+            $result = ["code" => FAILURE, "msg" => "用户名不存在！"];
+        }
+        else {
+            if ($user->email != $email) {
+                $result = ["code" => FAILURE, "msg" => "邮箱错误！"];
+            } else {
+                // 生成验证码
+                $a = range('a', 'z');
+                $A = range('A', 'Z');
+                $num = range('0', '9');
+                $charSet = array_merge($a, $A, $num);
+                $randKeys = array_rand($charSet, 6);
+                $code = array();
+                foreach ($randKeys as $key) {
+                    array_push($code, $charSet[$key]);
+                }
+                $code = implode("", $code);  // 将一个一维数组的值转化为字符串
+                Session::set('passwordResetCode', $code);
+                $mailer = new Mailer();
+                $mailer->setRecipient($user->email, $user->name);
+                $mailer->setCode($code, $user->name, $id);
+                $mailer->send();
+                $result = ["code" => SUCCESS, "msg" => "成功"];
+            }
+        }
+        return json($result);
+    }
+
+    /**
+     * Method doPasswordReset
+     * @purpose 密码重置
+     * @return \think\response\Json
+     */
+    public function doPasswordReset() {
+        $id = $this->request->param('id');
+        $code = $this->request->param('code');
+        $password  = $this->request->param('password');
+        $result = [];
+        if ($id && $code && $password) {
+            if ($code ==  session('passwordResetCode')) {
+                $user = User::get($id);
+                $user->password = password_hash($password,PASSWORD_DEFAULT);
+                $user->save();
+                $result = ["code" => SUCCESS, "msg" => "成功"];
+            }
+            else {
+                $result = ["code" => FAILURE, "msg" => "验证码错误！"];
+            }
+        }
+        else {
+            $this->error('非法操作！');
+        }
+        return json($result);
     }
 }

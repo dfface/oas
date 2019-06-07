@@ -5,31 +5,30 @@
     <div class="row justify-content-center my-5">
         <div class="col-4 my-5">
             <div class="text-center">
-                <img class=" img-fluid rounded-circle" src="{:session('avatar')}" alt="" style="width: 285px; height: 285px">
+                <img class=" img-fluid rounded-circle" src="{:session('avatar')}" alt="">
                 <h1 class="h3 mt-4 font-weight-normal" style="font-family: zhanKuaiFont">{:session('name')}</h1>
-                <hr class="">
+                <hr class="my-4">
                 <button id="avatarUpload" class="btn btn-primary btn-block" type="submit"><i class="layui-icon">&#xe67c;</i>上传头像</button>
             </div>
         </div>
         <div class="col-8 my-5">
             <form class="form-signin" action="javascript:" method="post">
                 <div class="form-label-group mb-3">
-                    <label for="password_origin">原密码</label>
+                    <label for="password_origin"><i class="layui-icon layui-icon-password"></i>原密码</label>
                     <input type="password" id="password_origin" name="password_origin" class="form-control" placeholder="请输入原始密码" autofocus>
                 </div>
                 <div class="form-label-group mb-3">
-                    <label for="password">新密码</label>
+                    <label for="password"><i class="layui-icon layui-icon-password"></i>新密码</label>
                     <input type="password" id="password" name="password" class="form-control" placeholder="请输入新密码">
                 </div>
                 <div class="form-label-group mb-3">
-                    <label for="password_confirm">确认密码</label>
+                    <label for="password_confirm"><i class="layui-icon layui-icon-password"></i>确认密码</label>
                     <input type="password" id="password_confirm" name="password_confirm" class="form-control" placeholder="请再次输入新密码">
                 </div>
                 <div class="form-label-group mb-3">
-                    <label for="email">新邮箱</label>
+                    <label for="email"><i class="layui-icon layui-icon-chat"></i>新邮箱</label>
                     <input type="email" id="email" name="email" class="form-control" placeholder="当前邮箱：{:session('email')}">
                 </div>
-
                 <button id="doInfoModify" class="btn btn-lg btn-primary btn-block" type="submit">提交</button>
                 <button class="btn btn-lg btn-primary btn-block" type="reset">重置</button>
             </form>
@@ -43,6 +42,8 @@
     layui.use(['layer','element','upload'],function () {
         var layer = layui.layer;
         var upload = layui.upload;
+        var passwordSelect = $('#password');
+        var doInfoModifyBtn = $('#doInfoModify');
         upload.render({
             elem: '#avatarUpload',
             url: "{:url('index/Index/avatarUpload')}",
@@ -59,7 +60,23 @@
                 layer.msg('未知错误！', {icon: 5});
             }
         });
-        $('#doInfoModify').click(function () {
+        $('#password_confirm').focusout(function () {
+            if(passwordSelect.val() !== $(this).val()) {
+                layer.msg("两次输入的密码不一致！");
+                // 清空确认密码框
+                $(this).val('');
+                // 禁用提交按钮
+                doInfoModifyBtn.prop('disabled',true);
+            }
+            else if (($(this).val() === '') || (passwordSelect.val() === '')) {
+                layer.msg("两次输入的密码均不能为空！");
+                doInfoModifyBtn.prop('disabled',true);
+            }
+            else {
+                doInfoModifyBtn.prop('disabled',false);
+            }
+        });
+        doInfoModifyBtn.click(function () {
             var data = {};
             $.each($('form').serializeArray(),function () {
                 data[this.name] = this.value;

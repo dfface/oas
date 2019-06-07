@@ -20,8 +20,9 @@
             </div>
 
             <button id="do_login" class="btn btn-lg btn-primary btn-block" type="submit">登录</button>
-            <button class="btn btn-lg btn-primary btn-block" type="reset">重置</button>
-            <p class="mt-5 mb-3 text-muted text-center">&copy; 2018-2019</p>
+            <button class="btn btn-lg btn-secondary btn-block" type="reset">重置</button>
+            <p class="mt-3 text-muted text-right"> <a href="{:url('index/index/passwordReset')}" class="text-muted">忘记密码？</a></p>
+            <p class="mt-3 mb-3 text-muted text-center">&copy; 2018-2019</p>
         </form>
     </div>
 </div>
@@ -37,7 +38,10 @@
             $.post("{:url('index/Index/doLogin')}",JSON.parse(JSON.stringify(data)),function (bk_data) {
                 if (bk_data.code === 200) {
                     layer.msg(bk_data.msg, {icon: 6});
-                    window.location.replace("/"+bk_data.data+"/Index/index");
+                    // 延迟两秒跳转
+                    setTimeout(function () {
+                        window.location.replace("/"+bk_data.data+"/Index/index");
+                    },2*1000);
                 }
                 else {
                     layer.msg(bk_data.msg, {icon: 5});

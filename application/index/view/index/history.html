@@ -7,10 +7,10 @@
             <div class="layui-tab layui-tab-card">
                 <ul class="layui-tab-title">
                     {if session('role') == 0}
-                    <li>问题</li>
+                    <li><i class="layui-icon layui-icon-help"></i>问题</li>
                     {/if}
-                    <li>回复</li>
-                    <li>上传</li>
+                    <li><i class="layui-icon layui-icon-reply-fill"></i>回复</li>
+                    <li><i class="layui-icon layui-icon-upload"></i>上传</li>
                 </ul>
                 <div class="layui-tab-content">
                     {if (session('role') == 0)}
@@ -34,7 +34,7 @@
 <script type="text/html" id="toolbar">
     <div class="layui-btn-container">
         <a href="{:url('student/Index/questionAsk')}">
-            <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+            <button class="layui-btn layui-btn-sm" lay-event="add"><i class="layui-icon layui-icon-add-1"></i>添加</button>
         </a>
     </div>
 </script>
@@ -44,8 +44,8 @@
 {/if}
 {// 问题每行工具栏}
 <script type="text/html" id="bar">
-    <a class="layui-btn layui-btn-xs text-white" lay-event="inspect">查看</a>
-    <a class="layui-btn layui-btn-danger layui-btn-xs text-white" lay-event="delete">删除</a>
+    <a class="layui-btn layui-btn-xs text-white" lay-event="inspect"><i class="layui-icon layui-icon-read"></i>查看</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs text-white" lay-event="delete"><i class="layui-icon layui-icon-delete"></i>删除</a>
 </script>
 {// 渲染}
 <script>
