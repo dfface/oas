@@ -62,6 +62,15 @@ class Mailer
         ."<p>© 2018-2019 北京科技大学 OAS软工课设小组</p>";
     }
 
+    public function setReplyRemind($tea_name,$stu_name,$que_id) {
+        $this->mailer->isHTML(true);
+        $this->mailer->Subject = "你的问题得到".$tea_name."老师的回复了";
+        $this->mailer->Body = "<h3>亲爱的".$stu_name."，你好：</h3>"
+            ."你的问题 ".$que_id." 已有老师"."<span style='color: orangered;'>".$tea_name."</span>"."做出回答，快去看看吧。"
+            ."<p>本邮件由系统自动发送，请不要直接回复！</p>"
+            ."<p>© 2018-2019 北京科技大学 OAS软工课设小组</p>";
+    }
+
     /**
      * Method send
      * @purpose 发送邮件

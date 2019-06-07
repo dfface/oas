@@ -375,13 +375,15 @@ class Index extends Controller
 
     /**
      * Method replySubmit
-     * @purpose 回复问题的提交接口
-     * @params use_id que_id
+     * @purpose 回复问题的提交接口，同时增加教师身份判定以给学生发送邮件提醒
      * @return \think\response\Json
+     * @throws \PHPMailer\PHPMailer\Exception
      */
     public function replySubmit() {
         if ($user_id = session('id')){
+            $user = User::get($user_id);
             $que_id = $this->request->param('que_id');
+            $question = Question::get($que_id);
             $content = $this->request->param('content');
             $reply = Reply::create([
                 "que_id" => $que_id,
@@ -389,6 +391,13 @@ class Index extends Controller
                 "content" => $content,
             ]);
             $result = ["code" => SUCCESS, "msg" => "成功", "data" => $reply->id];
+            // 判断是否是老师回答，若是则发送邮件提醒
+            if ($user->role == ROLE_TEACHER) {
+                $mailer = new Mailer();
+                $mailer->setRecipient($question->student->email,$question->student->name);
+                $mailer->setReplyRemind($user->name,$question->student->name,$que_id);
+                $mailer->send();
+            }
         }
         else {
             $result = ["code" => FAILURE, "msg" => "您还没有登录！"];
