@@ -1,0 +1,259 @@
+{extend name="./templates/base.html"/}
+
+{block name="body"}
+<div class="container my-5">
+    <div class="row py-3">
+        <div class="col">
+            <div class="layui-tab layui-tab-card">
+                <ul class="layui-tab-title">
+                    <li>学生列表</li>
+                    <li>老师列表</li>
+                    {if (session('role')===3)}
+                    <li>管理员列表</li>
+                    {/if}
+                </ul>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show" >
+                       <div class="layui-btn-container" >
+                           <a href="{:url('administrator/Index/userAdd',['role' => 0])}">
+                               <button class="layui-btn layui-btn-sm" lay-event="add" style="float:left ;margin-top:12px" >添加</button>
+                           </a>
+                           <div class="row justify-content-center m-1">
+                               <form class="form-inline" id="form_search_student" method="post" action="{:url('administrator/Index/search',['table' => 'user','role' => 0])}">
+                                   <select id="student_search" class="custom-select my-1 mr-sm-1" name="search_field">
+                                       <option selected value="id">学号</option>
+                                       <option value="name">姓名</option>
+                                       <option value="email">邮箱</option>
+                                       <option value="profile">简介</option>
+                                   </select>
+                                   <div class="my-1 mr-sm-1 form-group">
+                                       <input type="text" class="form-control" id="search_field_value_stu" name="search_field_value" style="width: 30rem" required>
+                                   </div>
+                                   <div class="my-1 mr-sm-1">
+                                       <button id="btn_search_student" type="submit" class="btn btn-primary my-1">搜索</button>
+                                   </div>
+                               </form>
+                           </div>
+                       </div>
+                        <table id="students" class="layui-hide" lay-filter="students" lay-data="{id: 'students'}"></table>
+                    </div>
+                    <div class="layui-tab-item">
+                        <div class="layui-btn-container">
+                            <a href="{:url('administrator/Index/userAdd',['role' => 1])}">
+                                <button class="layui-btn layui-btn-sm" lay-event="add" style="float:left ;margin-top:12px" >添加</button>
+                            </a>
+                            <div class="row justify-content-center m-1">
+                                <form class="form-inline" id="form_search_teacher" method="post" action="{:url('administrator/Index/search',['table' => 'user','role' => 1])}}">
+                                    <select id="admin_search" class="custom-select my-1 mr-sm-1" name="search_field">
+                                        <option selected value="id">工号</option>
+                                        <option value="name">姓名</option>
+                                        <option value="email">邮箱</option>
+                                        <option value="profile">简介</option>
+                                    </select>
+                                    <div class="my-1 mr-sm-1 form-group">
+                                        <input type="text" class="form-control" id="search_field_value_tea" name="search_field_value" style="width: 30rem" required>
+                                    </div>
+                                    <div class="my-1 mr-sm-1">
+                                        <button id="btn_search_teacher" type="submit" class="btn btn-primary my-1">搜索</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <table id="teachers" class="layui-hide" lay-filter="teachers" lay-data="{id: 'teachers'}"></table>
+                    </div>
+                    {if (session('role')===3)}
+                    <div class="layui-tab-item" >
+                        <div class="layui-btn-container">
+                            <a href="{:url('administrator/Index/userAdd',['role' => 2])}">
+                                <button class="layui-btn layui-btn-sm" lay-event="add" style="float:left ;margin-top:12px" >添加</button>
+                            </a>
+                            <div class="row justify-content-center m-1">
+                                <form class="form-inline"  method="post" action="{:url('administrator/Index/search',['table' => 'user','role' => 2])}}">
+                                    <select  class="custom-select my-1 mr-sm-1" name="search_field">
+                                        <option selected value="id">工号</option>
+                                        <option value="name">姓名</option>
+                                        <option value="email">邮箱</option>
+                                        <option value="profile">简介</option>
+                                    </select>
+                                    <div class="my-1 mr-sm-1 form-group">
+                                        <input type="text" class="form-control"  name="search_field_value" style="width: 30rem" required>
+                                    </div>
+                                    <div class="my-1 mr-sm-1">
+                                        <button  type="submit" class="btn btn-primary my-1">搜索</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <table id="admins" class="layui-hide" lay-filter="admins" lay-data="{id: 'admins'}"></table>
+                    </div>
+                    {else /}
+                    {/if}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{// 上部工具栏}
+<script type="text/html" id="toolbar">
+</script>
+{// 每行工具栏}
+<script type="text/html" id="bar">
+    <a class="layui-btn layui-btn-xs text-white" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs text-white" lay-event="delete">删除</a>
+</script>
+{// 渲染}
+<script>
+    $(function () {
+        layui.use(['element','flow','table'], function() {
+            var studentTableData =$('#studentTableData').val();
+                //studentTableData;
+            var table = layui.table;
+            table.render({
+                id: 'students',
+                elem: '#students',
+                url: "{:url('administrator/Index/userTable',['role' => 0])}",
+                toolbar: '#toolbar',
+                title: '用户列表',
+                cols: [[
+                    {field: 'id', title: '编号', fixed: 'left', sort: true},
+                    {field: 'name', title: '姓名', sort: true},
+                    {field: 'email', title: '邮箱'},
+                    {field: 'profile', title: '个人简介'},
+                    {field: 'role', title: '角色', sort: true, templet: function (res) {
+                            if(res=='0') return '学生';
+                            else return  '学生';
+                        }},
+                    {field: 'create_time', title: '创建时间', sort: true},
+                    {field: 'update_time', title: '更新时间', sort: true},
+                    {fixed: 'right', title:'操作', toolbar: '#bar'},
+                ]],
+                page: true,
+            });
+            table.render({
+                id: 'teachers',
+                elem: '#teachers',
+                url: "{:url('administrator/Index/userTable',['role' => 1])}",
+                toolbar: '#toolbar',
+                title: '用户列表',
+                cols: [[
+                    {field: 'id', title: '编号', fixed: 'left', sort: true},
+                    {field: 'name', title: '姓名', sort: true},
+                    {field: 'email', title: '邮箱'},
+                    {field: 'profile', title: '个人简介'},
+                    {field: 'role', title: '角色', sort: true, templet: function (res) {
+                            if(res=='0') return '教师';
+                            else return  '教师';
+                        }},
+                    {field: 'create_time', title: '创建时间', sort: true},
+                    {field: 'update_time', title: '更新时间', sort: true},
+                    {fixed: 'right', title:'操作', toolbar: '#bar'},
+                ]],
+                page: true,
+            });
+            table.render({
+                id: 'admins',
+                elem: '#admins',
+                url: "{:url('administrator/Index/userTable',['role' => 2])}",
+                toolbar: '#toolbar',
+                title: '用户列表',
+                cols: [[
+                    {field: 'id', title: '编号', fixed: 'left', sort: true},
+                    {field: 'name', title: '姓名', sort: true},
+                    {field: 'email', title: '邮箱'},
+                    {field: 'profile', title: '个人简介'},
+                    {field: 'role', title: '角色', sort: true, templet: function (res) {
+                            if(res=='0') return '管理员';
+                            else return  '管理员';
+                        }},
+                    {field: 'create_time', title: '创建时间', sort: true},
+                    {field: 'update_time', title: '更新时间', sort: true},
+                    {fixed: 'right', title:'操作', toolbar: '#bar'},
+                ]],
+                page: true,
+            });
+            //学生的删除与修改
+            table.on('tool(students)', function (obj) {
+                var data = obj.data;
+                var layEvent = obj.event;
+                if (layEvent === 'edit') {
+                    window.open("{:url('administrator/Index/userEdit')}"+"?id="+data.id,'_blank');
+                }else
+                if (layEvent  ===  'delete')  {
+                    console.log(data.id);
+                    layer.confirm('确定要删除用户"'+data.name+'"?',{icon: 3, title:'提示',skin: 'layui-layer-molv'},function (index) {
+                        $.post("{:url('administrator/Index/userDelete')}",{"id": data.id}, function (bk_data) {
+                            if(bk_data.code === 200) {
+                                layer.msg(bk_data.msg, {icon: 6});
+                                obj.del();  //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                            }
+                            else {
+                                layer.msg(bk_data.msg, {icon: 5});
+                            }
+                        })
+                    })
+                }else if(layEvent === 'add'){
+                    window.open("{:url('administrator/Index/userAdd')}"+"?role="+0,'_blank');
+                } else {
+                    layer.msg('出错了', {icon: 2});
+                }
+            });
+            //老师的删除与修改
+            table.on('tool(teachers)', function (obj) {
+                var data = obj.data;
+                var layEvent = obj.event;
+                if (layEvent === 'edit') {
+                    window.open("{:url('administrator/Index/userEdit')}"+"?id="+data.id,'_blank');
+                }else
+                if (layEvent  ===  'delete')  {
+                    console.log(data.id);
+                    layer.confirm('确定要删除用户"'+data.name+'"?',{icon: 3, title:'提示',skin: 'layui-layer-molv'},function (index) {
+                        $.post("{:url('administrator/Index/userDelete')}",{"id": data.id}, function (bk_data) {
+                            if(bk_data.code === 200) {
+                                layer.msg(bk_data.msg, {icon: 6});
+                                obj.del();  //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                            }
+                            else {
+                                layer.msg(bk_data.msg, {icon: 5});
+                            }
+                        })
+                    })
+                }else if(layEvent === 'add'){
+                    $.post("{:url('administrator/Index/userAdd')}",{"role":1})
+                } else {
+                    layer.msg('出错了', {icon: 2});
+                }
+            });
+            //管理员的删除与修改
+            table.on('tool(admins)', function (obj) {
+                var data = obj.data;
+                var layEvent = obj.event;
+                if (layEvent === 'edit') {
+                    window.open("{:url('administrator/Index/userEdit')}"+"?id="+data.id,'_blank');
+                }else
+                if (layEvent  ===  'delete')  {
+                    console.log(data.id);
+                    layer.confirm('确定要删除用户"'+data.name+'"?',{icon: 3, title:'提示',skin: 'layui-layer-molv'},function (index) {
+                        $.post("{:url('administrator/Index/userDelete')}",{"id": data.id}, function (bk_data) {
+                            if(bk_data.code === 200) {
+                                layer.msg(bk_data.msg, {icon: 6});
+                                obj.del();  //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                            }
+                            else {
+                                layer.msg(bk_data.msg, {icon: 5});
+                            }
+                        })
+                    })
+                }else if(layEvent === 'add'){
+                    $.post("{:url('administrator/Index/userAdd')}",{"role":2})
+                }else {
+                    layer.msg('出错了', {icon: 2});
+                }
+            });
+        });
+    });
+</script>
+{/block}

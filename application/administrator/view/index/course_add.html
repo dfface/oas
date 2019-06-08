@@ -1,0 +1,64 @@
+{extend name="./templates/base.html"/}
+
+{block name="body"}
+<div class="container my-5 pt-3">
+    <div class="row">
+        <div class="col">
+            <form action="javascript:" method="post">
+                <div class="form-group">
+                    <label for="id">课程编号</label>
+                    <input type="text" class="form-control" id="id" name="id" placeholder="eg.C00000" required/>
+                </div>
+                <div class="form-group">
+                    <label for="tea_id">授课教师编号</label>
+                    <input type="text" class="form-control" id="tea_id" name="tea_id" placeholder="eg.B0707161" required/>
+                </div>
+                <div class="form-group">
+                    <label for="name">课程名称</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="eg.计算机网络" required/>
+                </div>
+                <div class="form-group">
+                    <label for="year">学年</label>
+                    <input type="text" class="form-control" id="year" name="year" placeholder="eg.2019" required/>
+                </div>
+                <div class="form-group">
+                    <label for="semester">学季</label>
+                    <select class="form-control" id="semester" name="semester" required>
+                    <option value="春">春</option>
+                    <option value="夏">夏</option>
+                    <option value="秋">秋</option>
+                    </select>
+                </div>
+                    <button id="add" class="btn btn-primary btn-block" type="submit">添加</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        $('#add').click(function () {
+            var data = {};
+            $.each($('form').serializeArray(),function () {
+                data[this.name] = this.value;
+            });
+            console.log(data);
+            $.post("{:url('administrator/Index/doCourseAdd')}", JSON.parse(JSON.stringify(data)),function (back_data) {
+                if(back_data.code === 200){
+                    layui.use('layer',function () {
+                        var layer = layui.layer;
+                        layer.msg(back_data.msg, {icon: 6});
+                    });
+                    window.location.replace("{:url('administrator/Index/courseList')}");
+                }
+                else{
+                    layui.use('layer',function () {
+                        var layer = layui.layer;
+                        layer.msg(back_data.msg, {icon: 5});
+                    });
+                }
+            });
+        });
+    });
+</script>
+{/block}

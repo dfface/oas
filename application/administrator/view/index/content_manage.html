@@ -1,0 +1,337 @@
+{extend name="./templates/base.html"/}
+
+{block name="import"}
+{css href="/static/bootstrap/css/bootstrap.css"}
+{css href="/static/carousel.css"}
+{css href="/static/layui/css/layui.css"}
+{js href="/static/jquery-3.4.1.js"}
+{js href="/static/bootstrap/js/bootstrap.js"}
+{js href="/static/popper.min.js"}
+{js href="/static/layuiTablePlug/src/layui.js"}
+{js href="/static/editor/editormd.js"}
+{js href="/static/editor/lib/marked.min.js"}
+{js href="/static/editor/lib/prettify.min.js"}
+{/block}
+
+{block name="body"}
+<style>
+    .laytable-cell-1-imageUrl{
+        height:100%;
+        max-width:100%
+    }
+    .layui-table-cell{
+        text-align:center;
+    }
+</style>
+<div class="container my-5">
+    <div class="row py-3">
+        <div class="col">
+            <div class="layui-tab layui-tab-card">
+                <ul class="layui-tab-title">
+                    <li class="layui-this">问题列表</li>
+                    <li>回复列表</li>
+                    <li>轮播图管理</li>
+                </ul>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show" >
+                        <div class="row justify-content-center m-1">
+                            <form class="form-inline"  >
+                                <select class="custom-select my-1 mr-sm-1" id="search_field" name="search_field">
+                                    <option selected value="id">问题编号</option>
+                                    <option value="stu_id">学生编号</option>
+                                    <option value="course_id">课程编号</option>
+                                    <option value="title">问题标题</option>
+                                    <option value="content">提问内容</option>
+                                    <option value="status">状态</option>
+                                </select>
+                                <div class="my-1 mr-sm-1 form-group">
+                                    <input type="text" class="form-control"  name="search_field_value" id="search_field_value" style="width: 30rem" required>
+                                </div>
+                                <div class="my-1 mr-sm-1">
+                                    <button id="btn_search_questions" type="button" class="btn btn-primary my-1" lay-event="reload">搜索</button>
+                                </div>
+                            </form>
+                        </div>
+                        <table id="questions" class="layui-hide" lay-filter="questions" lay-data="{id: 'questions'}"></table>
+                    </div>
+                    <div class="layui-tab-item">
+                        <div class="row justify-content-center m-1">
+                            <form class="form-inline"  >
+                                <select class="custom-select my-1 mr-sm-1" id="search_field_replies" name="search_field">
+                                    <option selected value="id">回复编号</option>
+                                    <option value="que_id">问题编号</option>
+                                    <option value="use_id">回复者编号</option>
+                                    <option value="content">回复内容</option>
+                                    <option value="status">状态</option>
+                                    <option value="like_count">点赞数</option>
+                                    <option value="dislike_count">拍砖数</option>
+                                </select>
+                                <div class="my-1 mr-sm-1 form-group">
+                                    <input type="text" class="form-control"  name="search_field_value" id="search_field_value_replies" style="width: 30rem" required>
+                                </div>
+                                <div class="my-1 mr-sm-1">
+                                    <button id="btn_search_replies" type="button" class="btn btn-primary my-1" lay-event="reload">搜索</button>
+                                </div>
+                            </form>
+                        </div>
+                        <table id="replies" class="layui-hide" lay-filter="replies" lay-data="{id: 'replies'}"></table>
+                    </div>
+                    <div class="layui-tab-item" >
+                        <div class="layui-btn-container">
+                            <div class="row justify-content-center m-1">
+                            <a href="{:url('administrator/Index/carouselAdd')}">
+                                <button class="layui-btn layui-btn-sm" lay-event="add-take" style="float:left ;margin-top:12px">添加</button>
+                            </a>
+                            </div>
+                            <table id="carousels" class="layui-hide" lay-filter="carousels" lay-data="{id: 'carousels'}"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{// 上部工具栏}
+<script type="text/html" id="toolbar">
+</script>
+{// 每行工具栏}
+<script type="text/html" id="bar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs text-white" lay-event="delete" id="user-del">删除</a>
+</script>
+<script type="text/html" id="carousel_bar">
+    <a class="layui-btn layui-btn-danger layui-btn-xs text-white" lay-event="delete" id="carousel-del">删除</a>
+</script>
+{// 渲染}
+<script>
+    $(function () {
+        var view = editormd.markdownToHTML('editor-view', {});
+        layui.use(['element','table'], function() {
+            var element = layui.element;
+            var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
+            var table = layui.table;
+            var form = layui.form;
+            var fn1 = function(field,table){
+              return function(data){
+                  var value = data[field];
+                  if(field === 'content'){
+                      var result = [
+                          '<div class="row justify-content-center pt-5">',
+                          '    <div class="col">',
+                          '<div id="question" class="card">'+
+                          '   <div class="card-body">'+
+                          '        <div class="card-text" id="editor-view">'+
+                          '            <textarea height="10px" width="100px" style="display:none;">'+value+'</textarea>'+
+                          '        </div>'+
+                          '    </div>'+
+                          '</div>',
+                          '    </div>',
+                          '</div>',
+
+                      ].join('');
+                      return result;
+                  }else if(field === 'status'){
+                      var type = data[table];
+                      if(type === 'question'){
+                          var result =         ['<input type="checkbox" name="status" lay-skin="switch" lay-text="未解决|已解决" lay-filter="status_checkbox" value=" '+ value + '" '+ (value === 1?'checked':'')+'>'].join('');
+                          return result;
+
+                      }else{
+                          var result =         ['<input type="checkbox" name="status" lay-skin="switch" lay-text="未采纳|已采纳" lay-filter="status_checkbox" value=" '+ value + '" '+ (value === 1?'checked':'')+'>'].join('');
+                          return result;
+
+                      }
+                  }
+              }
+            };
+            table.render({
+                id: 'questions',
+                elem: '#questions',
+                url: "{:url('administrator/Index/questionTable')}",
+                toolbar: '#toolbar',
+                title: '问题列表',
+                cols: [[
+                    {field: 'id', title: '编号', fixed: 'left', sort: true },
+                    {field: 'stu_id', title: '学生编号', sort: true,},
+                    {field: 'course_id', title: '课程编号',},
+                    {field: 'title', title: '问题标题'},
+                    {field: 'content', title: '提问内容'},
+                    {
+                        field: 'status', title: '状态', edit: false, sort: true, templet: fn1('status','question')
+                    },
+                    {field: 'create_time', title: '创建时间', sort: true},
+                    {field: 'update_time', title: '更新时间', sort: true},
+                    {fixed: 'right', title:'操作', toolbar: '#bar'},
+                ]],
+                page: true,
+            });
+            table.render({
+                id: 'replies',
+                elem: '#replies',
+                url: "{:url('administrator/Index/replyTable')}",
+                toolbar: '#toolbar',
+                title: '回复列表',
+                cols: [[
+                    {field: 'id', title: '编号', fixed: 'left', sort: true },
+                    {field: 'que_id', title: '问题编号', sort: true},
+                    {field: 'use_id', title: '提问者编号',},
+                    {field: 'content', title: '回复内容',
+                        //templet:fn1('content')
+                    },
+                    {field: 'status', title: '状态',edit:false,sort: true, templet:fn1('status','reply')},
+                    {field: 'like_count', title: '点赞数',edit:false},
+                    {field: 'dislike_count', title: '排砖数',edit:false},
+                    {fixed: 'right', title:'操作', toolbar: '#bar'},
+                ]],
+                page: true,
+            });
+            table.render({
+                id:'carousels',
+                elem:'#carousels',
+                url:"{:url('administrator/Index/carouselTable')}",
+                page:true,
+                cols:[[
+                    {field:'id',width:100,sort:true,title:'ID'},
+                    {field:'imageUrl',width:300,title:'图片预览',templet:'<div><img src="{{d.imageUrl}}"></div>'},
+                    {field:'imageUrl',title:'图片url',width:300,sort:true},
+                    {fixed: 'right', title:'操作', toolbar: '#carousel_bar'},
+                ]],
+            });
+            table.on('tool(questions)', function (obj) {
+                var data = obj.data;
+                var layEvent = obj.event;
+                if (layEvent  ===  'delete')  {
+                    console.log(data.id);
+                    layer.confirm('确定要删除问题"'+data.title+'"?',{icon: 3, title:'提示',skin: 'layui-layer-molv'},function (index) {
+                        $.post("{:url('administrator/Index/questionDelete')}",{"id": data.id}, function (bk_data) {
+                            if(bk_data.code === 200) {
+                                layer.msg(bk_data.msg, {icon: 6});
+                                obj.del();  //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                            }
+                            else {
+                                layer.msg(bk_data.msg, {icon: 5});
+                            }
+                        })
+                    })
+                } else if(layEvent === 'detail'){
+                    window.open("{:url('index/Index/questionInspect')}"+"?question_id="+data.id,'_blank');
+                }else{
+                    layer.msg('出错了', {icon: 2});
+                }
+            });
+            table.on('tool(replies)', function (obj) {
+                var data = obj.data;
+                var layEvent = obj.event;
+                if (layEvent  ===  'delete')  {
+                    console.log(data.id);
+                    layer.confirm('确定要删除回复?',{icon: 3, title:'提示',skin: 'layui-layer-molv'},function (index) {
+                        $.post("{:url('administrator/Index/replyDelete')}",{"id": data.id}, function (bk_data) {
+                            if(bk_data.code === 200) {
+                                layer.msg(bk_data.msg, {icon: 6});
+                                obj.del();  //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                            }
+                            else {
+                                layer.msg(bk_data.msg, {icon: 5});
+                            }
+                        })
+                    })
+                } else if(layEvent === 'detail'){
+                    window.open("{:url('index/Index/questionInspect')}"+"?question_id="+data.que_id,'_blank');
+                }else{
+                    layer.msg('出错了', {icon: 2});
+                }
+            });
+            table.on('tool(carousels)', function (obj) {
+                var data = obj.data;
+                var layEvent = obj.event;
+                if (layEvent  ===  'delete')  {
+                    console.log(data.id);
+                    layer.confirm('确定要删除轮播图?',{icon: 3, title:'提示',skin: 'layui-layer-molv'},function (index) {
+                        $.post("{:url('administrator/Index/carouselDelete')}",{"id": data.id}, function (bk_data) {
+                            if(bk_data.code === 200) {
+                                layer.msg(bk_data.msg, {icon: 6});
+                                obj.del();  //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                            }
+                            else {
+                                layer.msg(bk_data.msg, {icon: 5});
+                            }
+                        })
+                    })
+                } else{
+                    layer.msg('出错了', {icon: 2});
+                }
+            });
+            $('#btn_search_questions').click(function(){
+                var role = -1;
+                var search_field = $('#search_field').val();
+                var search_field_value = $('#search_field_value').val();
+                console.log(search_field,search_field_value);
+                table.reload('questions',{
+                    url: "{:url('administrator/Index/doSearch')}",
+                    where:{role: role, search_table: 'question',search_field:search_field,search_field_value:search_field_value},
+                    page:{curr:1}
+                },'data');
+            });
+            $('#btn_search_replies').click(function(){
+                var role = -1;
+                var search_field = $('#search_field_replies').val();
+                var search_field_value = $('#search_field_value_replies').val();
+                console.log(search_field,search_field_value);
+                table.reload('replies',{
+                    url: "{:url('administrator/Index/doSearch')}",
+                    where:{role: role, search_table: 'reply',search_field:search_field,search_field_value:search_field_value},
+                    page:{curr:1}
+                },'data');
+            });
+            form.on('switch(status_checkbox)', function (data) {
+                var selectElem = $(data.elem);
+                var tdElem = selectElem.closest('td');
+                var trElem = tdElem.closest('tr');
+                var tableView = trElem.closest('.layui-table-view');
+                var id = table.cache[tableView.attr('lay-id')][trElem.data('index')].id;
+                var isReply = table.cache[tableView.attr('lay-id')][trElem.data('index')].is_second_reply;
+                var status = table.cache[tableView.attr('lay-id')][trElem.data('index')][tdElem.data('field')];
+                console.log('before:status='+status)
+                var result = (status === 1);
+                if(result){
+                    status = 0;
+                    table.cache[tableView.attr('lay-id')][trElem.data('index')][tdElem.data('field')] = 0;
+                }else{
+                    status = 1;
+                    table.cache[tableView.attr('lay-id')][trElem.data('index')][tdElem.data('field')] = 1;
+                }
+                console.log('after:status='+status);
+                if(isReply === undefined){
+                    $.post("{:url('administrator/Index/questionEdit')}"
+                        ,{role : -1, id :id ,field : 'status', value : status}
+                        ,function(data){
+                            if(data.code === 200) {
+                                console.log(data.msg);
+                                layer.msg(data.msg,{icon:6});
+                            }else{
+                                console.log(data.msg);
+                                layer.msg(data.msg,{icon:5,anim:6});
+                            }
+                        }
+                    );
+                }else{
+                    $.post("{:url('administrator/Index/replyEdit')}"
+                        ,{role : -1, id :id ,field : 'status', value : status}
+                        ,function(data){
+                            if(data.code === 200) {
+                                console.log(data.msg);
+                                layer.msg(data.msg,{icon:6});
+                            }else{
+                                layer.msg(data.msg,{icon:5,anim:6});
+                            }
+                        }
+                    );
+                }
+            });
+        });
+    });
+</script>
+{/block}

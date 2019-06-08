@@ -1,0 +1,47 @@
+{extend name="./templates/base.html"/}
+
+{block name="body"}
+<div class="container my-5 pt-3">
+    <div class="row">
+        <div class="col">
+            <form action="javascript:" method="post">
+                <div class="form-group">
+                    <label for="id">轮播图编号</label>
+                    <input type="text" class="form-control" id="id" name="id" placeholder="eg.M1000" />
+                </div>
+                <div class="form-group">
+                    <label for="url">轮播图地址</label>
+                    <input type="text" class="form-control" id="url" name="url" placeholder="eg.http:/oas.com/images/1.png" />
+                </div>
+                <button id="add" class="btn btn-primary btn-block" type="submit">添加</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function() {
+        $('#add').click(function () {
+            var data = {};
+            $.each($('form').serializeArray(),function () {
+                data[this.name] = this.value;
+            });
+            console.log(data);
+            $.post("{:url('administrator/Index/doCarouselAdd')}", JSON.parse(JSON.stringify(data)),function (back_data) {
+                if(back_data.code === 200){
+                    layui.use('layer',function () {
+                        var layer = layui.layer;
+                        layer.msg(back_data.msg, {icon: 6});
+                    });
+                    window.location.replace("{:url('administrator/Index/contentManage')}");
+                }
+                else{
+                    layui.use('layer',function () {
+                        var layer = layui.layer;
+                        layer.msg(back_data.msg, {icon: 5});
+                    });
+                }
+            });
+        });
+    });
+</script>
+{/block}

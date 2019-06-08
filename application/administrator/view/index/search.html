@@ -1,0 +1,128 @@
+{extend name="./templates/base.html"/}
+
+{block name="body"}
+<div class="container my-5">
+    <div class="row py-3">
+        <div class="col">
+            <div class="layui-tab layui-tab-card">
+                <ul class="layui-tab-title">
+                    <li>查看结果
+                        <form>
+                            <input type="hidden" name="role" id="role" value="{$role}"/>
+                            <input type="hidden" name="search_table" id="search_table" value="{$search_table}"/>
+                            <input type="hidden" name="search_field" id="search_field" value="{$search_field}"/>
+                            <input type="hidden" name="search_field_value" id="search_field_value" value="{$search_field_value}"/>
+                    </form>
+                    </li>
+                </ul>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show">
+                        <table id="results" class="layui-hide" lay-filter="results" lay-data="{id: 'results'}"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{// 上部工具栏}
+<script type="text/html" id="toolbar">
+    <div class="layui-btn-container">
+    </div>
+</script>
+{// 每行工具栏}
+<script type="text/html" id="bar">
+    <a class="layui-btn layui-btn-xs text-white" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs text-white" lay-event="delete" id="user-del">删除</a>
+</script>
+{// 渲染}
+<script>
+    $(function () {
+        layui.use(['element','table'], function() {
+            var role = $('#role').val();
+            var search_table = $('#search_table').val();
+            var search_field = $('#search_field').val();
+            var search_field_value = $('#search_field_value').val();
+            console.log(search_table);
+            console.log(search_field);
+            console.log(search_field_value);
+            console.log(role);
+
+            var table = layui.table;
+            table.render({
+                id: 'results',
+                elem: '#results',
+                type:'post',
+                url: "{:url('administrator/Index/doSearch')}",
+                where:{role: role, search_table: search_table,search_field:search_field,search_field_value:search_field_value},
+                toolbar: '#toolbar',
+                title: '用户列表',
+                cols: [[
+                    {field: 'id', title: '编号', fixed: 'left', sort: true},
+                    {field: 'name', title: '姓名', sort: true},
+                    {field: 'email', title: '邮箱'},
+                    {field: 'profile', title: '个人简介'},
+                    {field: 'role', title: '角色', sort: true,
+                        templet: function (res) {
+                            //return (res.role===1)?'已解决':'未解决';
+                            if(res.role===0) return '学生';
+                            else if(res.role===1)return '老师';
+                            else if(res.role===2) return '普通管理员';
+                            else if(res.role===3) return '超级管理员'
+                                return  '出错了';
+                        }
+                        },
+                    {field: 'create_time', title: '创建时间', sort: true},
+                    {field: 'update_time', title: '更新时间', sort: true},
+                    {fixed: 'right', title:'操作', toolbar: '#bar'},
+                    //console.log(id),
+                ]],
+                page: true,
+            });
+            table.render({
+                id: 'takes',
+                elem: '#takes',
+                url: "{:url('administrator/Index/takeTable')}",
+                toolbar: '#toolbar',
+                title: '用户列表',
+                cols: [[
+                    {field: 'stu_id', title: '编号', fixed: 'left', sort: true},
+                    {field: 'cou_id', title: '授课教师编号', sort: true},
+                    {field: 'create_time', title: '创建时间', sort: true},
+                    {field: 'update_time', title: '更新时间', sort: true},
+                    {field: 'delete_time', title: '删除时间', sort: true},
+                    {fixed: 'right', title:'操作', toolbar: '#bar'},
+                ]],
+                page: true,
+            });
+            table.on('tool(results)', function (obj) {
+                var data = obj.data;
+                var layEvent = obj.event;
+                if (layEvent === 'edit') {
+                    window.open("{:url('administrator/Index/userEdit')}"+"?id="+data.id,'_blank');
+                }else
+                if (layEvent  ===  'delete')  {
+                    console.log(data.id);
+                    layer.confirm('确定要删除用户"'+data.name+'"?',{icon: 3, title:'提示',skin: 'layui-layer-molv'},function (index) {
+                        $.post("{:url('administrator/Index/userDelete')}",{"id": data.id}, function (bk_data) {
+                            if(bk_data.code === 200) {
+                                layer.msg(bk_data.msg, {icon: 6});
+                                obj.del();  //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                                // tableInst.reload({
+                                // },'data');
+                            }
+                            else {
+                                layer.msg(bk_data.msg, {icon: 5});
+                            }
+                        })
+                    })
+                } else {
+                    layer.msg('出错了', {icon: 2});
+                }
+            });
+
+        });
+    });
+</script>
+{/block}

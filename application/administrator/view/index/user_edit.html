@@ -1,0 +1,90 @@
+{extend name="./templates/base.html"/}
+
+{block name="body"}
+<div class="container my-5">
+    <div class="row justify-content-center my-5">
+        <div class="col-4 my-5">
+            <div class="text-center">
+                <h1 class="h3 mt-4 font-weight-normal" style="font-family: zhanKuaiFont">修改用户信息</h1>
+                <img class=" img-fluid rounded-circle" src="{$user.avatar}" alt="" style="width: 285px; height: 285px">
+                <h1 class="h3 mt-4 font-weight-normal" style="font-family: zhanKuaiFont" ></h1>
+                <hr class="" >
+                <button style="margin-top:60px" id="avatarUpload"  class="btn btn-primary btn-block" type="submit"><i class="layui-icon">&#xe67c;</i>修改头像</button>
+            </div>
+        </div>
+        <div class="col-8 my-5">
+            <form class="form-signin" action="javascript:" method="post">
+                <div class="form-label-group mb-3">
+                    <input type="hidden" id="id" name="id" class="form-control" value="{$user.id}" autofocus>
+                </div>
+                <div class="form-label-group mb-3">
+                    <label for="name">姓名</label>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="{$user.name}" autofocus>
+                </div>
+                <div class="form-label-group mb-3">
+                    <label for="password">新密码</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="请输入新密码">
+                </div>
+                <div class="form-label-group mb-3">
+                    <label for="password_confirm">确认密码</label>
+                    <input type="password" id="password_confirm" name="password_confirm" class="form-control" placeholder="请再次输入新密码">
+                </div>
+                <div class="form-label-group mb-3">
+                    <label for="profile">个人简介</label>
+                    <input type="email" id="profile" name="profile" class="form-control" placeholder="{$user.profile}">
+                </div>
+                <div class="form-label-group mb-3">
+                    <label for="email">邮箱</label>
+                    <input type="text" id="email" name="email" class="form-control" placeholder="{$user.email}">
+                </div>
+                <button id="doInfoModify" class="btn btn-lg btn-primary btn-block" type="submit">修改信息</button>
+                <button class="btn btn-lg btn-primary btn-block" type="reset">重置</button>
+            </form>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <p class="mt-5 mb-3 text-muted text-center">&copy; 2018-2019</p>
+    </div>
+</div>
+<script>
+    layui.use(['layer','element','upload'],function () {
+        var layer = layui.layer;
+        var upload = layui.upload;
+        var id = $('#id').val();
+        upload.render({
+            elem: '#avatarUpload',
+            url: "{:url('administrator/Index/avatarUpload')}",
+            data:{id:id},
+            field: 'avatar',
+            done: function (res) {
+                if (res.code === 200) {
+                    window.location.reload();
+                }
+                else {
+                    layer.msg(res.msg, {icon: 5});
+                }
+            },
+            error: function (res) {
+                layer.msg('未知错误！', {icon: 5});
+            }
+        });
+        $('#doInfoModify').click(function () {
+            var data = {};
+            $.each($('form').serializeArray(),function () {
+                data[this.name] = this.value;
+            });
+            console.log(data);
+            $.post("{:url('administrator/Index/doUserEdit')}",JSON.parse(JSON.stringify(data)),function (bk_data) {
+                if (bk_data.code === 200) {
+                    layer.msg(bk_data.msg, {icon: 6});
+                    window.location.replace("{:url('administrator/Index/userList')}");
+                }
+                else {
+                    console.log(bk_data.msg);
+                    layer.msg(bk_data.msg, {icon: 5});
+                }
+            });
+        });
+    })
+</script>
+{/block}

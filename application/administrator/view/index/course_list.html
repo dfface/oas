@@ -1,0 +1,331 @@
+{extend name="./templates/base.html"/}
+{block name="import"}
+{css href="/static/bootstrap/css/bootstrap.css"}
+{css href="/static/carousel.css"}
+{css href="/static/layui/css/layui.css"}
+{js href="/static/jquery-3.4.1.js"}
+{js href="/static/bootstrap/js/bootstrap.js"}
+{js href="/static/popper.min.js"}
+{js href="/static/layuiTablePlug/src/layui.js"}
+{/block}
+{block name="body"}
+
+<div class="container my-5">
+    <div class="row py-3">
+        <div class="col">
+            <div class="layui-tab layui-tab-card">
+                <ul class="layui-tab-title">
+                    <li class="layui-this">课程列表</li>
+                    <li>选课情况列表</li>
+                </ul>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show"  >
+                        <div class="layui-btn-container">
+                            <a href="{:url('administrator/Index/courseAdd')}">
+                                <button class="layui-btn layui-btn-sm"  style="float:left ;margin-top:12px" >添加</button>
+                            </a>
+                            <div class="row justify-content-center m-1">
+                                <form class="form-inline" id="form_search_course" >
+                                    <select class="custom-select my-1 mr-sm-1" id="search_field" name="search_field">
+                                        <option selected value="id">课程编号</option>
+                                        <option value="tea_id">教师编号</option>
+                                        <option value="name">课程名称</option>
+                                        <option value="semester">学季</option>
+                                        <option value="year">学年</option>
+                                        <option value="status">状态</option>
+                                    </select>
+                                    <div class="my-1 mr-sm-1 form-group">
+                                        <input type="text" class="form-control"  name="search_field_value" id="search_field_value" style="width: 30rem" required>
+                                    </div>
+                                    <div class="my-1 mr-sm-1">
+                                        <button id="btn_search_course" type="button" class="btn btn-primary my-1" lay-event="reload">搜索</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <table id="courses" class="table_th_search" lay-filter="courses" lay-data="{id: 'courses'}"></table>
+                    </div>
+                    <div class="layui-tab-item">
+                        <div class="layui-btn-container">
+                            <a href="{:url('administrator/Index/takeAdd')}">
+                                <button class="layui-btn layui-btn-sm" lay-event="add-take" style="float:left ;margin-top:12px">添加</button>
+                            </a>
+                            <div class="row justify-content-center m-1">
+                                <form class="form-inline" id="form_search_take" >
+                                    <select class="custom-select my-1 mr-sm-1"  id="search_field_take">
+                                        <option selected value="stu_id">选课学生编号</option>
+                                        <option value="cou_id">课程编号</option>
+                                    </select>
+                                    <div class="my-1 mr-sm-1 form-group">
+                                        <input type="text" class="form-control"  id="search_field_value_take" style="width: 30rem" required>
+                                    </div>
+                                    <div class="my-1 mr-sm-1">
+                                        <button id="btn_search_take" type="button" class="btn btn-primary my-1" lay-event="reload">搜索</button>
+                                    </div>
+                                </form>
+                            </div>
+                        <table id="takes" class="layui-hide" lay-filter="takes" lay-data="{id: 'takes'}"></table>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{// 上部工具栏}
+<script type="text/html" id="toolbar">
+
+</script>
+{// 每行工具栏}
+<script type="text/html" id="bar">
+   <a class="layui-btn layui-btn-danger layui-btn-xs text-white" lay-event="delete" id="user-del"> <i class="layui-icon layui-icon-delete"></i>删除</a>
+</script>
+{// 渲染}
+<script>
+    $(function () {
+        layui.config({base: 'test/js/'})
+            .use(['testTablePlug','element','laydate','table'], function() {
+            var element = layui.element;
+            var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
+            var table = layui.table;
+            var form = layui.form //表单
+            var laydate = layui.laydate;
+
+            var fn1 = function (field) {
+                return function (data) {
+                    // return data[field];
+                    var value = data[field];
+                    if(field === 'semester'){
+                        var result = [
+                            '<select name="semester" lay-filter="semester_select" lay-search="true" value="' + value + '">',
+                            '<option value="春" ' + (value === '春' ? 'selected' : '') + '>春</option>',
+                            '<option value="夏" ' + (value === '夏' ? 'selected' : '') + '>夏</option>',
+                            '<option value="秋" ' + (value === '秋' ? 'selected' : '') + '>秋</option>',
+                            '</select>'
+                        ].join('');
+                       // console.log(result);
+                        return result;
+                    }else{
+                        var result =         ['<input type="checkbox" name="status" lay-skin="switch" lay-text="冻结|激活" lay-filter="status_checkbox" value=" '+ value + '" '+ (value === 1?'checked':'')+'>'].join('');
+                        return result;
+                    }
+                };
+            };
+
+            table.render({
+                done: function (res, curr, count) {
+                    var tableView = this.elem.next();
+                    // 初始化laydate
+                    layui.each(tableView.find('td[data-field="year"]'), function (index, tdElem) {
+                        tdElem.onclick = function (event) {
+                            layui.stope(event)
+                        };
+                        laydate.render({
+                            type:'year',
+                            elem: tdElem.children[0],
+                            // closeStop: tdElem,
+                            format: 'yyyy',
+                            done: function (value, date) {
+                                var trElem = $(this.elem[0]).closest('tr');
+                                table.cache.courses[trElem.data('index')]['birthday'] = value;
+                                console.log(value);
+                                console.log(table.cache.courses[trElem.data('index')]['id'] );
+                                var id = table.cache[tableView.attr('lay-id')][trElem.data('index')].id;
+                                //table.cache[tableView.attr('lay-id')][trElem.data('index')][tdElem.data('field')] = data.value;
+                                $.post("{:url('administrator/Index/courseEdit')}"
+                                    ,{role : -1, id :id ,field : 'year', value : value}
+                                    ,function(data){
+                                        if(data.code === 200) {
+                                            console.log(data.msg);
+                                            layer.msg(data.msg,{icon:6});
+                                        }else{
+                                            layer.msg(data.msg,{icon:5,anim:6});
+                                        }
+                                    }
+                                );
+                            }
+                        });
+                    });
+                }
+                ,
+                id: 'courses',
+                elem: '#courses',
+                url: "{:url('administrator/Index/courseTable')}",
+                toolbar: '#toolbar',
+                title: '用户列表',
+                cols: [[
+                    {field: 'id', title: '编号', fixed: 'left', sort: true },
+                    {field: 'tea_id', title: '授课教师编号', sort: true,edit: 'text'},
+                    {field: 'name', title: '课程名称',edit: 'text'},
+                    {field: 'semester', title: '学季',sort:true,search: true, edit: false,  type: 'normal',templet:fn1('semester')},
+                    {field: 'year', title: '年度',sort:true,edit: false},
+                    {field: 'status', title: '状态',edit: false,  type: 'normal',
+                        templet:fn1('status')
+                        },
+                    {fixed: 'right', title:'操作', toolbar: '#bar'},
+                ]],
+                page: true,
+            });
+            $('#btn_search_course').click(function(){
+                var role = -1;
+                var search_field = $('#search_field').val();
+                var search_field_value = $('#search_field_value').val();
+                console.log(search_field,search_field_value);
+                table.reload('courses',{
+                    url: "{:url('administrator/Index/doSearch')}",
+                    where:{role: role, search_table: 'course',search_field:search_field,search_field_value:search_field_value},
+                    page:{curr:1}
+                },'data');
+            });
+            $('#btn_search_take').click(function(){
+                    var role = -1;
+                    var search_field = $('#search_field_take').val();
+                    var search_field_value = $('#search_field_value_take').val();
+                    console.log(search_field,search_field_value);
+                    table.reload('takes',{
+                        url: "{:url('administrator/Index/doSearch')}",
+                        where:{role: role, search_table: 'take',search_field:search_field,search_field_value:search_field_value},
+                        page:{curr:1}
+                    },'data');
+                });
+                table.render({
+                id: 'takes',
+                elem: '#takes',
+                url: "{:url('administrator/Index/takeTable')}",
+                toolbar: '#toolbar',
+                title: '用户列表',
+                 cols: [[
+                    {field: 'stu_id', title: '编号', fixed: 'left', sort: true,edit:'text'},
+                    {field: 'cou_id', title: '课程编号', sort: true,edit:'text'},
+                    {fixed: 'right', title:'操作', toolbar: '#bar'},
+                ]],
+                page: true,
+            });
+            //课程的编辑
+            table.on('edit(courses)', function(obj){
+                var value = obj.value //得到修改后的值
+                    ,data = obj.data //得到所在行所有键值
+                    ,field = obj.field; //得到字段
+                $.post("{:url('administrator/Index/courseEdit')}",{"id": data.id,"value":value,"field":field}, function (bk_data) {
+                    if(bk_data.code === 200) {
+                        layer.msg(bk_data.msg,{icon: 6});
+                    }
+                    else {
+                        layer.msg(bk_data.msg, {icon: 5});
+                    }
+                })
+            });
+            //课程的删除
+            table.on('tool(courses)', function (obj) {
+                var data = obj.data;
+                var layEvent = obj.event;
+                if (layEvent  ===  'delete')  {
+                    console.log(data.id);
+                    layer.confirm('确定要删除课程"'+data.name+'"?',{icon: 3, title:'提示',skin: 'layui-layer-molv'},function (index) {
+                        $.post("{:url('administrator/Index/courseDelete')}",{"id": data.id}, function (bk_data) {
+                            if(bk_data.code === 200) {
+                                layer.msg(bk_data.msg, {icon: 6});
+                                obj.del();  //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                            }
+                            else {
+                                layer.msg(bk_data.msg, {icon: 5});
+                            }
+                        })
+                    })
+                } else {
+                    layer.msg('出错了', {icon: 2});
+                }
+            });
+            //选课记录的编辑
+            table.on('edit(takes)', function(obj){
+                var value = obj.value //得到修改后的值
+                    ,data = obj.data //得到所在行所有键值
+                    ,field = obj.field; //得到字段
+                console.log(data.cou_id);
+                $.post("{:url('administrator/Index/takeEdit')}",{"stu_id": data.stu_id,"cou_id":data.cou_id,"value":value,"field":field}, function (bk_data) {
+                    if(bk_data.code === 200) {
+                        layer.msg(bk_data.msg + field + ' 字段更改为：'+ value);
+                    }
+                    else {
+                        layer.msg(bk_data.msg, {icon: 5});
+                    }
+                })
+            });
+            //选课记录的删除
+            table.on('tool(takes)', function (obj) {
+                var data = obj.data;
+                var layEvent = obj.event;
+                if (layEvent  ===  'delete')  {
+                    console.log(data.cou_id);
+                    console.log(data.stu_id);
+                    layer.confirm('确定要删除这条选课记录吗?',{icon: 3, title:'提示',skin: 'layui-layer-molv'},function (index) {
+                        $.post("{:url('administrator/Index/takeDelete')}",{"stu_id": data.stu_id,"cou_id":data.cou_id}, function (bk_data) {
+                            if(bk_data.code === 200) {
+                                layer.msg(bk_data.msg, {icon: 6});
+                                obj.del();  //删除对应行（tr）的DOM结构，并更新缓存
+                             }
+                            else {
+                                layer.msg(bk_data.msg, {icon: 5});
+                            }
+                        })
+                    })
+                }else {
+                    layer.msg('出错了', {icon: 2});
+                }
+            });
+            // 监听表格中的下拉选择将数据同步到table.cache中
+                form.on('select(semester_select)', function (data) {
+                    var selectElem = $(data.elem);
+                    var tdElem = selectElem.closest('td');
+                    var trElem = tdElem.closest('tr');
+                    var tableView = trElem.closest('.layui-table-view');
+                    var id = table.cache[tableView.attr('lay-id')][trElem.data('index')].id;
+                    table.cache[tableView.attr('lay-id')][trElem.data('index')][tdElem.data('field')] = data.value;
+                    $.post("{:url('administrator/Index/courseEdit')}"
+                        ,{role : -1, id :id ,field : 'semester', value : data.value}
+                        ,function(data){
+                            if(data.code === 200) {
+                                console.log(data.msg);
+                                layer.msg(data.msg,{icon:6});
+                            }else{
+                                layer.msg(data.msg,{icon:5,anim:6});
+                            }
+                        });
+                });
+                form.on('switch(status_checkbox)', function (data) {
+                    var selectElem = $(data.elem);
+                    var tdElem = selectElem.closest('td');
+                    var trElem = tdElem.closest('tr');
+                    var tableView = trElem.closest('.layui-table-view');
+                    var id = table.cache[tableView.attr('lay-id')][trElem.data('index')].id;
+                    var isReply = table.cache[tableView.attr('lay-id')][trElem.data('index')].is_second_reply;
+                    var status = table.cache[tableView.attr('lay-id')][trElem.data('index')][tdElem.data('field')];
+                    console.log('before:status='+status)
+                    var result = (status === 1);
+                    if(result){
+                        status = 0;
+                        table.cache[tableView.attr('lay-id')][trElem.data('index')][tdElem.data('field')] = 0;
+                    }else{
+                        status = 1;
+                        table.cache[tableView.attr('lay-id')][trElem.data('index')][tdElem.data('field')] = 1;
+                    }
+                    console.log('after:status='+status);
+                    $.post("{:url('administrator/Index/courseEdit')}"
+                        ,{role : -1, id :id ,field : 'status', value : status}
+                        ,function(data){
+                            if(data.code === 200) {
+                                console.log(data.msg);
+                                layer.msg(data.msg,{icon:6});
+                            }else{
+                                layer.msg(data.msg,{icon:5,anim:6});
+                            }
+                        }
+                    );
+                });
+            }
+        );
+    });
+
+</script>
+{/block}
