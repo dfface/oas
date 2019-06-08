@@ -343,7 +343,7 @@ class Index extends Controller
         if ($rep_id = $this->request->param('rep_id')) {
             // 进行判断 是否超过一个小时
             if(Session::has('l'.$rep_id)) {
-                $result = ["code" => FAILURE, "msg" => "一小时之内不许再点赞！"];
+                $result = ["code" => FAILURE, "msg" => "一小时之内不许再给我点赞！"];
             }
             else {
                 Session::set('l'.$rep_id,'');
@@ -370,7 +370,7 @@ class Index extends Controller
         if ($rep_id = $this->request->param('rep_id')) {
             // 进行判断 是否超过一个小时
             if(Session::has('d'.$rep_id)) {
-                $result = ["code" => FAILURE, "msg" => "一小时之内不许再拍砖！"];
+                $result = ["code" => FAILURE, "msg" => "一小时之内不许再给我拍砖！"];
             }
             else {
                 Session::set('d'.$rep_id,'');
@@ -466,9 +466,13 @@ class Index extends Controller
      */
     public function questionTable()  {
         $stu_id = session('id');
+        $user = User::get($stu_id);
         if (!$stu_id) {
             // 适应layui接口
             $result = ["code" => 1, "msg" => "未登录！"];
+        }
+        elseif ($user->role != ROLE_STUDENT){
+            $result1= ["code" => 1, "msg" => "不是学生用户！"];
         }
         else {
             $page = $this->request->param('page');
@@ -543,7 +547,7 @@ class Index extends Controller
             $result = ["code" => FAILURE, "msg" => "未登录！"];
         }
         else {
-            $reply_id =  $this->request->param('reply_id');
+            $reply_id = $this->request->param('reply_id');
             $reply = Reply::get($reply_id);
             // 回复属主验证
             if ($reply_id === $reply->id) {
@@ -577,8 +581,7 @@ class Index extends Controller
     public function doSearch() {
         $search_type = $this->request->param('search_type');
         $search_value = $this->request->param('search_value');
-        $this->assign('search_type',$search_type);
-        $this->assign('search_value',$search_value);
+        $this->assign('search_type',$search_type);        $this->assign('search_value',$search_value);
         $count = '';
         switch ($search_type) {
             case 'question':
@@ -588,7 +591,6 @@ class Index extends Controller
                 $count = Reply::where('content','like','%'.$search_value.'%')->select()->count();
                 break;
             default:
-                $result = ["code" => FAILURE, "msg" => "非法操作！"];
                 break;
         }
         $this->assign('count', $count);
@@ -643,25 +645,22 @@ class Index extends Controller
      * @purpose 手动构造数据
      */
     public function create() {
-//        for ( $i = 0; $i < 20; $i++) {
-//            $reply = Reply::create([
-//                'que_id' => '10004',
-//                'use_id' => 'B00000',
-//                'content' => "这是测试回答$i"
-//            ]);
-//            dump($reply->id);
-//        }
-        $user = User::create([
-            'id' => 'B00002',
-            'name' => '陈红松',
-            'password' => password_hash('123456',PASSWORD_DEFAULT),
-            'role' => 1,
-            'email' => 'chenhongsong@ustb.edu.cn',
-            'avatar' => 'http://scce.ustb.edu.cn/attach/file/shiziduiwu/jiaoshixinxi/2018-12-19/de760e256ec28ec0a7e6e6392e086f67.jpg',
-            'profile' => ' 陈红松，目前，在北京科技大学计算机系工作，系副主任职务，副教授职称，硕士生导师，主要从事网络信息安全方面的教学和科研工作，陈红松目前是IEEE ComSoc Radio Communication 技术委员，Elsevier 出版的国际期刊《Information Sciences》特邀审稿人，Springer出版的国际期刊《Wireless Personal Communications》特邀审稿人，《北京邮电大学学报》审稿人、《应用科学学报》审稿人，中国计算机学会会员，中国密码学会会员，北京市通信协会IPv6 专委会委员。荣获2004年度哈工大计算机学院正在进行的优秀博士论文奖； 2005年度获得哈工大优秀博士生奖学金；2006年度被评为黑龙江省优秀博士毕业生；2007年获得北京科技大学优秀青年教师科研论文奖；2009年获得北京科技大学优秀科研论文奖；2010年获得北京科技大学第24届教育教学成果奖一等奖（排名第1）。2013年9月-2014年9月在美国普渡大学计算机科学系信息安全研究中心进行国家公派学术访问，主要从事网络内容安全、无线Ad hoc及传感器网络安全协议、云安全、大数据访问控制及行业应用、物联网安全等方向的研究。可以招收计算机科学与技术、软件工程、计算机技术等专业的硕士研究生。',
+        if ($this->request->param('key','handy')) {
+            $user = User::create([
+                'id' => 'B00002',
+                'name' => '陈红松',
+                'password' => password_hash('123456',PASSWORD_DEFAULT),
+                'role' => 1,
+                'email' => 'chenhongsong@ustb.edu.cn',
+                'avatar' => 'http://scce.ustb.edu.cn/attach/file/shiziduiwu/jiaoshixinxi/2018-12-19/de760e256ec28ec0a7e6e6392e086f67.jpg',
+                'profile' => ' 陈红松，目前，在北京科技大学计算机系工作，系副主任职务，副教授职称，硕士生导师，主要从事网络信息安全方面的教学和科研工作，陈红松目前是IEEE ComSoc Radio Communication 技术委员，Elsevier 出版的国际期刊《Information Sciences》特邀审稿人，Springer出版的国际期刊《Wireless Personal Communications》特邀审稿人，《北京邮电大学学报》审稿人、《应用科学学报》审稿人，中国计算机学会会员，中国密码学会会员，北京市通信协会IPv6 专委会委员。荣获2004年度哈工大计算机学院正在进行的优秀博士论文奖； 2005年度获得哈工大优秀博士生奖学金；2006年度被评为黑龙江省优秀博士毕业生；2007年获得北京科技大学优秀青年教师科研论文奖；2009年获得北京科技大学优秀科研论文奖；2010年获得北京科技大学第24届教育教学成果奖一等奖（排名第1）。2013年9月-2014年9月在美国普渡大学计算机科学系信息安全研究中心进行国家公派学术访问，主要从事网络内容安全、无线Ad hoc及传感器网络安全协议、云安全、大数据访问控制及行业应用、物联网安全等方向的研究。可以招收计算机科学与技术、软件工程、计算机技术等专业的硕士研究生。',
 
-        ]);
-        dump($user->id);
+            ]);
+            dump($user->id);
+        }
+        else {
+            echo "禁止操作！";
+        }
     }
 
     /**
@@ -715,7 +714,6 @@ class Index extends Controller
         $id = $this->request->param('id');
         $code = $this->request->param('code');
         $password  = $this->request->param('password');
-        $result = [];
         if ($id && $code && $password) {
             if ($code ==  session('passwordResetCode')) {
                 $user = User::get($id);
@@ -728,7 +726,7 @@ class Index extends Controller
             }
         }
         else {
-            $this->error('非法操作！');
+            $result = ["code" => FAILURE, "msg" => "请完整填写表单！"];
         }
         return json($result);
     }
