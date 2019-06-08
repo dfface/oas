@@ -225,7 +225,7 @@ class Index extends Controller
             $info = $file->move('./images');
             if ($info) {
                 // 注意图片的地址
-                $path = 'http://oas.com/images/'.$info->getSaveName();
+                $path = '/images/'.$info->getSaveName();
                 // 存入数据库 修改 session
                 $user = User::get(Session::get('id'));
                 $user->avatar = $path;
@@ -311,7 +311,7 @@ class Index extends Controller
             $path_name = './images/'.$info->getSaveName();
             $image = Image::open($path_name);
             $image->water('./images/logo_min.png',\think\Image::WATER_NORTHWEST)->text('oas '.date('Y-m-d h:i:s'),'Alibaba-PuHuiTi-Regular.otf',10)->save($path_name);
-            $path = 'http://oas.com/images/'.$info->getSaveName();  // 注意图片的地址
+            $path = '/images/'.$info->getSaveName();  // 注意图片的地址
             // 写入文件表
             File::create([
                 'use_id' => Session::get('id'),

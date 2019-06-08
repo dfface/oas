@@ -31,6 +31,9 @@ class Index extends Controller
      * Method index
      * @purpose 教师主页
      * @return mixed
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function index() {
         $this->roleCheck();
@@ -68,8 +71,11 @@ class Index extends Controller
 
     /**
      * Method courseTable
-     * @puropse 查看课程列表方法
+     * @purpose 查看课程列表方法
      * @return \think\response\Json
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function courseTable(){
         $this->roleCheck();
@@ -112,6 +118,9 @@ class Index extends Controller
      * Method questionTable
      * @purpose 查看问题方法
      * @return \think\response\Json
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function questionTable(){
         $this->roleCheck();
@@ -206,6 +215,9 @@ class Index extends Controller
      * Method studentTable
      * @purpose 查看该课程学生
      * @return \think\response\Json
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function studentTable(){
         $this->roleCheck();
@@ -224,8 +236,6 @@ class Index extends Controller
             $data[$key]['name'] = $user->name;
             $data[$key]['cou_id'] = $cou_id;
         }
-        // 适应layui接口
-
         $result = ["code" => 0, "msg" => "成功", "count" => $students_count, "data" => $data];
         return json($result);
     }
@@ -234,6 +244,8 @@ class Index extends Controller
      * Method studentDelete
      * @purpose 删除课程下的学生
      * @return \think\response\Json
+     * @throws \think\Exception
+     * @throws \think\exception\PDOException
      */
     public function studentDelete(){
         $this->roleCheck();
