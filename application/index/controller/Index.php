@@ -7,6 +7,7 @@ use app\common\model\Course;
 use app\common\model\File;
 use app\common\model\Question;
 use app\common\model\Reply;
+use function MongoDB\BSON\toJSON;
 use think\Controller;
 use think\facade\Session;
 use app\common\model\User;
@@ -26,10 +27,22 @@ class Index extends Controller
 
     /**
      * Method index
-     * @purpose 主页显示
+     * @purpose 主页显示、需要设置回答数最多的三个教师
      * @return mixed
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function index() {
+        $teachers = User::where('role',ROLE_TEACHER)->alias('u')->leftJoin('reply r','u.id = r.use_id')->group('u.id')->field(['u.id','count(*) r_count'])->order('r_count','desc')->limit('3')->select();
+        foreach ($teachers as $key => $teacher) {
+            $this->assign('teacher'.$key.'_name',User::get($teacher->id)->name);
+            $this->assign('teacher'.$key.'_profile',User::get($teacher->id)->profile);
+            $this->assign('teacher'.$key.'_avatar',User::get($teacher->id)->avatar);
+            $this->assign('teacher'.$key.'_r_count',$teacher->r_count);
+        }
+        $questions = Question::order('read_count','desc')->limit(10)->select();
+        $this->assign('questions',$questions);
         return $this->fetch();
     }
 

@@ -50,81 +50,45 @@
             <span class="sr-only">Next</span>
         </a>
     </div>
-
-
-    <!-- Marketing messaging and featurettes
-    ================================================== -->
-    <!-- Wrap the rest of the page in another container to center all the content. -->
-
     <div class="container marketing">
-
-        <!-- Three columns of text below the carousel -->
-        <div class="row">
-            <div class="col-lg-4">
-                <img class="rounded-circle" width="140" height="140" src="http://scce.ustb.edu.cn/attach/file/shiziduiwu/jiaoshixinxi/2018-04-12/cae0262ae07e6b085ebf1e7893313296.jpg"  role="img" aria-label="Placeholder: 140x140"/>
-                <h2 class="m-3">王洪泊</h2>
-                <p class="m-3">王洪泊, 男，工学博士，硕士生导师，北京科技大学计算机与通信工程学院计算机系教师。主持国家自然科学基金项目(61572074)；作为骨干研究人员，参与国家自然科学基金项目(60375038)、国家“十五”重点科技攻关项目(2004BA616A-11)、北京市自然科学基金项目(4072018)……</p>
-                <p><a class="btn btn-secondary" href="#" role="button">详细信息 &raquo;</a></p>
-            </div><!-- /.col-lg-4 -->
-            <div class="col-lg-4">
-                <img class="rounded-circle" width="140" height="140" src="http://scce.ustb.edu.cn/attach/file/shiziduiwu/jiaoshixinxi/2018-04-09/4318670a11150628045019fa86f68920.jpg"  role="img" aria-label="Placeholder: 140x140"/>
-                <h2 class="m-3">阿孜古丽</h2>
-                <p class="m-3">阿孜古丽教授现任职北京科技大学计算机与通信工程学院教授，材料领域知识工程北京市重点实验室副主任，研究方向主要为知识工程、大数据技术、人工智能、互联网应用、软件体系架构等，作为项目负责人及主要研发人员承担过国家863、973、国家科技支撑及北京市省部级课题等三……</p>
-                <p><a class="btn btn-secondary" href="#" role="button">详细信息 &raquo;</a></p>
-            </div><!-- /.col-lg-4 -->
-            <div class="col-lg-4">
-                <img class="rounded-circle" width="140" height="140" src="http://scce.ustb.edu.cn/attach/file/shiziduiwu/jiaoshixinxi/2018-12-19/de760e256ec28ec0a7e6e6392e086f67.jpg"  role="img" aria-label="Placeholder: 140x140"/>
-                <h2 class="m-3">陈红松</h2>
-                <p class="m-3">陈红松，目前，在北京科技大学计算机系工作，系副主任职务，副教授职称，硕士生导师，主要从事网络信息安全方面的教学和科研工作，陈红松目前是IEEE ComSoc Radio Communication 技术委员，Elsevier 出版的国际期刊《Information Sciences》特邀审稿人……</p>
-                <p><a class="btn btn-secondary" href="#" role="button">详细信息 &raquo;</a></p>
-            </div><!-- /.col-lg-4 -->
-        </div><!-- /.row -->
-
-
-        <!-- START THE FEATURETTES -->
-
-        <hr class="featurette-divider">
-
-        <div class="row featurette">
-            <div class="col-md-7">
-                <h2 class="featurette-heading">First featurette heading. <span class="text-muted">It’ll blow your mind.</span></h2>
-                <p class="lead">Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id ligula porta felis euismod semper. Praesent commodo cursus magna, vel scelerisque nisl consectetur. Fusce dapibus, tellus ac cursus commodo.</p>
+        <div class="row card-deck">
+            <div class="col-lg-4 card overflow-auto" style="max-height: 30rem">
+                <div class="card-img-top my-3">
+                    <img class="rounded-circle" width="140" height="140" src="{$teacher0_avatar}"  role="img" aria-label="Placeholder: 140x140"/>
+                </div>
+                <h2 class="m-3">{$teacher0_name}</h2>
+                <h4>回复数：{$teacher0_r_count}</h4>
+                <p class="m-3">{$teacher0_profile}</p>
             </div>
-            <div class="col-md-5">
-                <svg class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto" width="500" height="500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 500x500"><title>Placeholder</title><rect fill="#eee" width="100%" height="100%"/><text fill="#aaa" dy=".3em" x="50%" y="50%">500x500</text></svg>
+            <div class="col-lg-4 card overflow-auto" style="max-height: 30rem">
+                <div class="card-img-top my-3">
+                    <img class="rounded-circle" width="140" height="140" src="{$teacher1_avatar}"  role="img" aria-label="Placeholder: 140x140"/>
+                </div>
+                <h2 class="m-3">{$teacher1_name}</h2>
+                <h4>回复数：{$teacher1_r_count}</h4>
+                <p class="m-3">{$teacher1_profile}</p>
+            </div>
+            <div class="col-lg-4 card overflow-auto" style="max-height: 30rem">
+                <div class="card-img-top my-3">
+                    <img class="rounded-circle" width="140" height="140" src="{$teacher2_avatar}"  role="img" aria-label="Placeholder: 140x140"/>
+                </div>
+                <h2 class="m-3">{$teacher2_name}</h2>
+                <h4>回复数：{$teacher2_r_count}</h4>
+                <p class="m-3">{$teacher2_profile}</p>
             </div>
         </div>
-
-        <hr class="featurette-divider">
-
+        <hr class="layui-bg-gray">
+        <h2 class="featurette-heading text-center my-3" style="font-family: zhanWeiFont">问题排行</h2>
+        {foreach $questions as $key => $vo}
         <div class="row featurette">
-            <div class="col-md-7 order-md-2">
-                <h2 class="featurette-heading">Oh yeah, it’s that good. <span class="text-muted">See for yourself.</span></h2>
-                <p class="lead">Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id ligula porta felis euismod semper. Praesent commodo cursus magna, vel scelerisque nisl consectetur. Fusce dapibus, tellus ac cursus commodo.</p>
-            </div>
-            <div class="col-md-5 order-md-1">
-                <svg class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto" width="500" height="500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 500x500"><title>Placeholder</title><rect fill="#eee" width="100%" height="100%"/><text fill="#aaa" dy=".3em" x="50%" y="50%">500x500</text></svg>
+            <div class="col">
+                <h2 class="my-2"><span class="badge badge-secondary">{$key+1}</span>
+                    <a href="{:url('index/index/questionInspect')."?question_id=".$vo.id}" role="button" target="_blank">{$vo.title}<span class="text-muted mx-3" style="font-family: zhanKuaiFont">{$vo.read_count} 次阅读</span></a>
+                </h2>
             </div>
         </div>
-
-        <hr class="featurette-divider">
-
-        <div class="row featurette">
-            <div class="col-md-7">
-                <h2 class="featurette-heading">And lastly, this one. <span class="text-muted">Checkmate.</span></h2>
-                <p class="lead">Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id ligula porta felis euismod semper. Praesent commodo cursus magna, vel scelerisque nisl consectetur. Fusce dapibus, tellus ac cursus commodo.</p>
-            </div>
-            <div class="col-md-5">
-                <svg class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto" width="500" height="500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 500x500"><title>Placeholder</title><rect fill="#eee" width="100%" height="100%"/><text fill="#aaa" dy=".3em" x="50%" y="50%">500x500</text></svg>
-            </div>
-        </div>
-
-        <hr class="featurette-divider">
+        {/foreach}
+        <hr class="layui-bg-gray">
     </div>
-
 </main>
-{/block}
-
-{block name="foot"}
-{include file="./templates/foot.html"/}
 {/block}
