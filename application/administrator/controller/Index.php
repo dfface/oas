@@ -166,7 +166,7 @@ class Index extends Controller
             'password' => password_hash($data['password'],PASSWORD_DEFAULT),
             'role' => $data['role']."",
             'email' => $data['email']."",
-            'avatar' => 'https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2779942948,1955954400&fm=26&gp=0.jpg',
+            'avatar' => '/images/logo.png',
             'profile' => $data['profile'].""
         ]);
         if($user != null){
@@ -192,7 +192,6 @@ class Index extends Controller
         $password_confirm = $this->request->param('password_confirm');
         $email = $this->request->param('email');
         $profile = $this->request->param('profile');
-        $result='';
         if($email === "" and $password === "" and $name === "" and $profile === "" and $password_confirm === ""){
             $result= ["code" => FAILURE, "msg" => "请输入要修改的信息！"];
             return json($result);
@@ -693,34 +692,50 @@ class Index extends Controller
     }
 
     /**
-     * @Method doCarouselADD
+     * @Method doCarouselAdd
      * @purpose 添加备选轮播图到数据库
     */
     public function  doCarouselAdd(){
         $this->roleCheck();
-        $data=[
-            'id'=> input('id'),
-            'url' =>input('url')
-        ];
-        if(strlen($data['id'])==0){
-            $result= ['code' => FAILURE,'msg'=> '轮播图编号不能为空'];
-            return json($result);
-        }else {
-            $carousel = Carousel::get($data['id']);
-            if($carousel!=null){
-                $result= ['code' => FAILURE,'msg'=> '轮播图编号已存在'];
-                return json($result);
-            }
+        $data=['url' =>input('url')];
+        if(strlen($data['url'])!=0){
+            Carousel::create(['url' => $data['url']]);
+            $result= ['code' => SUCCESS,'msg'=> '成功'];
         }
-        if(strlen($data['id'])==0){
-            $result= ['code' => FAILURE,'msg'=> '轮播图地址不能为空'];
-            return json($result);
+        else {
+            $result = ["code" => FAILURE, "msg" => "没有收到链接！"];
         }
-        Carousel::create([
-            'id' => $data['id']."",
-            'url' => $data['url'].""
-        ]);
-        $result= ['code' => SUCCESS,'msg'=> '轮播图添加成功'];
+        return json($result);
+    }
+
+    /**
+     * Method doCarouselUpload
+     * @purpose 轮播图上传
+     * @return \think\response\Json
+     */
+    public function doCarouselUpload() {
+        $this->roleCheck();
+        $file = $this->request->file('carousel');
+        $file_size = $file->getSize();
+        $info = $file->move('./images');
+        if ($info) {
+            // 注意图片的地址
+            $path = '/images/'.$info->getSaveName();
+            // 存入轮播图数据库
+            $carousel = Carousel::create(['url' => $path]);
+            // 写入文件表数据库
+            $file_db = new File();
+            $file_db->use_id = Session::get('id');
+            $file_db->name = "轮播图 ".$carousel->id;
+            $file_db->url = $path;
+            $file_db->desc = date('Y年m月d日')." 上传的轮播图";
+            $file_db->size = $file_size;
+            $file_db->save();
+            $result = ["code" => SUCCESS, "msg" => "成功"];
+        }
+        else {
+            $result = ["code" => FAILURE, "msg" => $info->getError()];
+        }
         return json($result);
     }
 
@@ -769,7 +784,6 @@ class Index extends Controller
             'search_field' => input('search_field'),
             'search_field_value' => input('search_field_value')
         ];
-        $result ='';
         $page = $this->request->param('page');
         $num_per_page = $this->request->param('limit') ;
         $where = [
