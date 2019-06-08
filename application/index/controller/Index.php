@@ -3,16 +3,15 @@
 namespace app\index\controller;
 
 use app\common\controller\Mailer;
+use app\common\model\Carousel;
 use app\common\model\Course;
 use app\common\model\File;
 use app\common\model\Question;
 use app\common\model\Reply;
-use function MongoDB\BSON\toJSON;
 use think\Controller;
 use think\facade\Session;
 use app\common\model\User;
 use think\Image;
-use think\Request;
 
 class Index extends Controller
 {
@@ -27,7 +26,7 @@ class Index extends Controller
 
     /**
      * Method index
-     * @purpose 主页显示、需要设置回答数最多的三个教师
+     * @purpose 主页显示，需要设置回答数最多的三个教师，10个问题排行，以及轮播图
      * @return mixed
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException
@@ -42,7 +41,9 @@ class Index extends Controller
             $this->assign('teacher'.$key.'_r_count',$teacher->r_count);
         }
         $questions = Question::order('read_count','desc')->limit(10)->select();
+        $carousels = Carousel::select();
         $this->assign('questions',$questions);
+        $this->assign('carousels',$carousels);
         return $this->fetch();
     }
 

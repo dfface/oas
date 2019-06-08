@@ -18,8 +18,4 @@ class Reply extends Model
     public function question(){
         return $this->belongsTo('Question', 'que_id', 'id');
     }
-    // 关联方法，一个a回复有零个或多个b回复，一个b回复仅对应一个a回复 一对多 注意回复表中必须有0号数据项，因为默认0为非二次回复
-    public function replies(){
-        return $this->hasMany('Reply','is_second_reply','id');
-    }
 }
