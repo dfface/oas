@@ -1,0 +1,65 @@
+{extend name="./templates/base.html"/}
+
+{block name="body"}
+<div class="container my-5">
+    <div class="col">
+        <div class="layui-tab layui-tab-card">
+            <table id="questions" class="layui-hide" lay-filter="questions" lay-data="{id: 'questions'}"></table>
+            <input type="hidden" id="cou_id" name="cou_id" value="{$cou_id}"/>
+
+        </div>
+    </div>
+</div>
+{// 每行工具栏}
+<script type="text/html" id="bar">
+    <a class="layui-btn layui-btn-danger layui-btn-xs text-white" lay-event="inspect">查看</a>
+</script>
+{// 渲染}
+<script>
+    $(function () {
+        layui.use(['element','flow','table'], function() {
+            var element = layui.element;
+            var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
+            var flow = layui.flow;
+            var table = layui.table;
+            var course_id = $('#cou_id').val();
+            console.log(course_id);
+            console.log(course_id);
+            table.render({
+                id: 'questions',
+                elem: '#questions',
+                url: "{:url('teacher/Index/questionTable')}",
+                where:{course_id:course_id},
+                toolbar: '#toolbar',
+                title: '问题列表',
+                cols: [[
+                    {field: 'id', title: '编号', fixed: 'left', sort: true},
+                    {field: 'title', title: '标题', sort: true},
+                    {field: 'status', title: '状态', sort: true,templet: '#staTpl'},
+                    {fixed: 'right', title:'操作', toolbar: '#bar'},
+                ]],
+                page: true,
+            });
+
+            table.on('tool(questions)',function (obj) {
+                var data = obj.data;
+                var layEvent = obj.event;
+                console.log(data.id);
+                if (layEvent === 'inspect') {
+                    window.open("{:url('index/Index/questionInspect')}"+"?question_id="+data.id,'_blank');
+                }
+            });
+        });
+
+    });
+</script>
+
+<script type="text/html" id="staTpl">
+    {{#  if(d.status === '已解决'){ }}
+    <span style="color: #f52a23;">{{ d.status }}</span>
+    {{#  } else { }}
+    {{ d.status }}
+    {{#  } }}
+</script>
+
+{/block}

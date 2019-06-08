@@ -1,0 +1,80 @@
+{extend name="./templates/base.html"/}
+
+{block name="body"}
+
+<div class="container my-5">
+    <div class="col">
+        <div class="layui-tab layui-tab-card">
+            <table id="students" class="layui-hide" lay-filter="students" lay-data="{id: 'students'}"></table>
+            <input type="hidden" id="cou_id" name="cou_id" value="{$cou_id}"/>
+
+        </div>
+    </div>
+</div>
+
+{// 上部工具栏}
+<script type="text/html" id="toolbar">
+    <div class="layui-btn-container">
+        <a href="studentAdd?course_id={$cou_id}">
+            <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+        </a>
+    </div>
+</script>
+{// 每行工具栏}
+<script type="text/html" id="bar">
+    <a class="layui-btn layui-btn-danger layui-btn-xs text-white" lay-event="delete">删除</a>
+</script>
+{// 渲染}
+<script>
+    $(function () {
+        layui.use(['element','flow','table'], function() {
+            var element = layui.element;
+            var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
+            var flow = layui.flow;
+            var table = layui.table;
+            var cou_id = $('#cou_id').val();
+            console.log(cou_id);
+            table.render({
+                id: 'students',
+                elem: '#students',
+                url: "{:url('teacher/Index/studentTable')}",
+                where:{cou_id:cou_id},
+                toolbar: '#toolbar',
+                title: '学生列表',
+                cols: [[
+                    {field: 'id', title: '编号', fixed: 'left', sort: true},
+                    {field: 'name', title: '姓名', sort: true},
+                    {fixed: 'right', title:'操作', toolbar: '#bar'},
+                ]],
+                page: true,
+            });
+
+            table.on('tool(students)',function (obj) {
+                var data = obj.data;
+                var layEvent = obj.event;
+                console.log(data.id);
+                console.log(data.name);
+                console.log(data.cou_id);
+                if (layEvent  ===  'delete')  {
+                    layer.confirm('确定要删除学生"'+data.name+'"?',{icon: 3, title:'提示',skin: 'layui-layer-molv'},function (index) {
+                        $.post("{:url('teacher/Index/studentDelete')}",{"stu_id": data.id,"cou_id":data.cou_id}, function (bk_data) {
+                            if(bk_data.code === 200) {
+                                layer.msg(bk_data.msg, {icon: 6});
+                                obj.del();  //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                            }
+                            else {
+                                layer.msg(bk_data.msg, {icon: 5});
+                            }
+                        })
+                    })
+                }
+                else {
+                    layer.msg('出错了', {icon: 5}); //1对 2错 3问 4锁 5哭 6笑 7叹号
+                }
+            });
+        });
+
+    });
+</script>
+{/block}
