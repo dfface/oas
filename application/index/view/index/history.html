@@ -4,13 +4,13 @@
 <div class="container my-5">
     <div class="row py-3">
         <div class="col">
-            <div class="layui-tab layui-tab-card">
+            <div class="layui-tab layui-tab-card" lay-filter="historyTab">
                 <ul class="layui-tab-title">
                     {if session('role') == 0}
-                    <li><i class="layui-icon layui-icon-help"></i>问题</li>
+                    <li lay-id="questionTab"><i class="layui-icon layui-icon-help"></i>问题</li>
                     {/if}
-                    <li><i class="layui-icon layui-icon-reply-fill"></i>回复</li>
-                    <li><i class="layui-icon layui-icon-upload"></i>上传</li>
+                    <li lay-id="replyTab"><i class="layui-icon layui-icon-reply-fill"></i>回复</li>
+                    <li lay-id="uploadTab"><i class="layui-icon layui-icon-upload"></i>上传</li>
                 </ul>
                 <div class="layui-tab-content">
                     {if (session('role') == 0)}
@@ -54,97 +54,119 @@
             var element = layui.element;
             var flow = layui.flow;
             var table = layui.table;
-            // 历史上传流加载
-            flow.load({
-                elem: '#uploads', //指定列表容器
-                isLazyimg: true, //图片懒加载
-                done: function(page, next){ //到达临界点（默认滚动触发），触发下一页
-                    var lis = [];
-                    $.get("{:url('index/Index/uploadPage')}?page="+page, function(res){
-                        //假设你的列表返回在data集合中
-                        layui.each(res.data, function(index, item){
-                            lis.push('<div class="card m-3"><img class="card-img-top" lay-src="'+ item.url +'">'+'<p class="card-body card-text">'+
-                                item.desc + '<a href="'+ item.url +'" class="card-link mx-3">' +
-                                '<i class="layui-icon layui-icon-download-circle"></i>下载' +
-                                (item.size/1024/1024).toPrecision(4) +'MB</a></div></p>');
+            // 监听选项卡的变化
+            element.on('tab(historyTab)',function (elem) {
+                switch (elem.index) {
+                    {if session('role') == 0}
+                    case 0: // 学生有历史提问可看
+                        if ("{:session('role')}" === '0') {
+                            table.render({
+                                id: 'questions',
+                                elem: '#questions',
+                                url: "{:url('index/Index/questionTable')}",
+                                toolbar: '#toolbar',
+                                title: '问题列表',
+                                cols: [[
+                                    {field: 'id', title: 'ID', fixed: 'left', width: 70, sort: true},
+                                    {field: 'course_name', title: '课程名', sort: true},
+                                    {field: 'title', title: '标题'},
+                                    {field: 'read_count', title: '阅读量', width: 80, sort: true},
+                                    {field: 'status', title: '状态', sort: true, width: 73, templet: function (res) {
+                                            return res.status === 0?'未解决':'已解决';
+                                        }},
+                                    {field: 'create_time', title: '创建时间', sort: true},
+                                    {field: 'update_time', title: '更新时间', sort: true},
+                                    {fixed: 'right', title:'操作', toolbar: '#bar'},
+                                ]],
+                                page: true,
+                            });
+                        }
+                        break;
+                    case 1: // 其他 用户 都有回复可看
+                    {else /}
+                    case 0: // 其他 用户 都有回复可看
+                    {/if}
+                        table.render({
+                            id: 'replies',
+                            elem: '#replies',
+                            toolbar: '#toolbarRep',
+                            url: "{:url('index/Index/replyTable')}",
+                            title: '回复列表',
+                            cols: [[
+                                {field: 'id', title: 'ID', fixed: 'left', width: 70, sort: true},
+                                {field: 'question_title', title: '问题标题', sort: true},
+                                {field: 'content', title: '回复内容'},
+                                {field: 'status', title: '状态', sort: true, width: 73, templet: function (res) {
+                                        return res.status === 0?'未采纳':'已采纳';
+                                    }},
+                                {field: 'like_count', title: '点赞数', width: 80, sort: true},
+                                {field: 'dislike_count', title: '拍砖数', width: 80, sort: true},
+                                {field: 'create_time', title: '创建时间', sort: true},
+                                {field: 'update_time', title: '更新时间', sort: true},
+                                {fixed: 'right', title:'操作', toolbar: '#bar'},
+                            ]],
+                            page: true,
                         });
-                        //执行下一页渲染，第二参数为：满足“加载更多”的条件，即后面仍有分页
-                        //pages为Ajax返回的总页数，只有当前页小于总页数的情况下，才会继续出现加载更多
-                        next(lis.join(''), page < res.pages);
-                    });
+                        break;
+                    {if session('role') == 0}
+                    case 2: // 历史上传流加载
+                    {else /}
+                    case 1:
+                    {/if}
+                        flow.load({
+                            elem: '#uploads', //指定列表容器
+                            isLazyimg: true, //图片懒加载
+                            done: function(page, next){ //到达临界点（默认滚动触发），触发下一页
+                                var lis = [];
+                                $.get("{:url('index/Index/uploadPage')}?page="+page, function(res){
+                                    //假设你的列表返回在data集合中
+                                    layui.each(res.data, function(index, item){
+                                        lis.push('<div class="card m-3"><img class="card-img-top" lay-src="'+ item.url +'">'+'<p class="card-body card-text">'+
+                                            item.desc + '<a href="'+ item.url +'" class="card-link mx-3">' +
+                                            '<i class="layui-icon layui-icon-download-circle"></i>下载' +
+                                            (item.size/1024/1024).toPrecision(4) +'MB</a></div></p>');
+                                    });
+                                    //执行下一页渲染，第二参数为：满足“加载更多”的条件，即后面仍有分页
+                                    //pages为Ajax返回的总页数，只有当前页小于总页数的情况下，才会继续出现加载更多
+                                    next(lis.join(''), page < res.pages);
+                                });
+                            }
+                        });
+                        break;
+                    default:
                 }
             });
-            // 学生有历史提问可看
-            if ("{:session('role')}" === '0') {
-                table.render({
-                    id: 'questions',
-                    elem: '#questions',
-                    url: "{:url('index/Index/questionTable')}",
-                    toolbar: '#toolbar',
-                    title: '问题列表',
-                    cols: [[
-                        {field: 'id', title: 'ID', fixed: 'left', width: 70, sort: true},
-                        {field: 'course_name', title: '课程名', sort: true},
-                        {field: 'title', title: '标题'},
-                        {field: 'read_count', title: '阅读量', width: 80, sort: true},
-                        {field: 'status', title: '状态', sort: true, width: 73, templet: function (res) {
-                                return res.status === 0?'未解决':'已解决';
-                            }},
-                        {field: 'create_time', title: '创建时间', sort: true},
-                        {field: 'update_time', title: '更新时间', sort: true},
-                        {fixed: 'right', title:'操作', toolbar: '#bar'},
-                    ]],
-                    page: true,
-                });
-                table.on('tool(questions)',function (obj) {
-                    var data = obj.data;
-                    var layEvent = obj.event;
-                    if (layEvent === 'inspect') {
-                        window.open("{:url('index/Index/questionInspect')}"+"?question_id="+data.id,'_blank');
-                    }
-                    else if (layEvent  ===  'delete')  {
-                        layer.confirm('确定要删除问题"'+data.title+'"?',{icon: 3, title:'提示',skin: 'layui-layer-molv'},function (index) {
-                            $.post("{:url('student/Index/questionDelete')}",{"question_id": data.id}, function (bk_data) {
-                                if(bk_data.code === 200) {
-                                    layer.msg(bk_data.msg, {icon: 6});
-                                    obj.del();  //删除对应行（tr）的DOM结构，并更新缓存
-                                    layer.close(index);
-                                    // tableInst.reload({
-                                    // },'data');
-                                }
-                                else {
-                                    layer.msg(bk_data.msg, {icon: 5});
-                                }
-                            })
+            // 初始化到回复选项卡 因为这些身份的人都有这个
+            element.tabChange('historyTab','replyTab');
+            {if session('role') == 0}
+            // 监听问题表格的操作
+            table.on('tool(questions)',function (obj) {
+                var data = obj.data;
+                var layEvent = obj.event;
+                if (layEvent === 'inspect') {
+                    window.open("{:url('index/Index/questionInspect')}"+"?question_id="+data.id,'_blank');
+                }
+                else if (layEvent  ===  'delete')  {
+                    layer.confirm('确定要删除问题"'+data.title+'"?',{icon: 3, title:'提示',skin: 'layui-layer-molv'},function (index) {
+                        $.post("{:url('student/Index/questionDelete')}",{"question_id": data.id}, function (bk_data) {
+                            if(bk_data.code === 200) {
+                                layer.msg(bk_data.msg, {icon: 6});
+                                obj.del();  //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                                // tableInst.reload({
+                                // },'data');
+                            }
+                            else {
+                                layer.msg(bk_data.msg, {icon: 5});
+                            }
                         })
-                    }
-                    else {
-                        layer.msg('出错了', {icon: 2});
-                    }
-                });
-            }
-            // 其他 用户 都有回复可看
-            table.render({
-                id: 'replies',
-                elem: '#replies',
-                toolbar: '#toolbarRep',
-                url: "{:url('index/Index/replyTable')}",
-                title: '回复列表',
-                cols: [[
-                    {field: 'id', title: 'ID', fixed: 'left', width: 70, sort: true},
-                    {field: 'question_title', title: '问题标题', sort: true},
-                    {field: 'content', title: '回复内容'},
-                    {field: 'status', title: '状态', sort: true, width: 73, templet: function (res) {
-                            return res.status === 0?'未采纳':'已采纳';
-                        }},
-                    {field: 'like_count', title: '点赞数', width: 80, sort: true},
-                    {field: 'dislike_count', title: '拍砖数', width: 80, sort: true},
-                    {field: 'create_time', title: '创建时间', sort: true},
-                    {field: 'update_time', title: '更新时间', sort: true},
-                    {fixed: 'right', title:'操作', toolbar: '#bar'},
-                ]],
-                page: true,
+                    })
+                }
+                else {
+                    layer.msg('出错了', {icon: 2});
+                }
             });
+            {/if}
             table.on('tool(replies)',function (obj) {
                 var data = obj.data;
                 var layEvent = obj.event;
@@ -169,7 +191,6 @@
                     layer.msg('出错了', {icon: 5}); //1对 2错 3问 4锁 5哭 6笑 7叹号
                 }
             });
-
         });
     });
 </script>

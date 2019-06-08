@@ -166,7 +166,7 @@
     $('#to_reply_btn').click(function () {
         $('html, body').animate({
             scrollTop: $('#to_reply').offset().top
-        }, 1000);
+        }, 300);
     });
     // 按钮组的操作
     $('#reply').on('click',':button',function () {
@@ -218,9 +218,7 @@
     $('#scroll_top').click(function() {
         $('html,body').animate({
             scrollTop: '0px'
-        }, 1000);
+        }, 300);
     });
 </script>
-{/block}
-{block name="foot"}
 {/block}

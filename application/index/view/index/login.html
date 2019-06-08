@@ -38,10 +38,10 @@
             $.post("{:url('index/Index/doLogin')}",JSON.parse(JSON.stringify(data)),function (bk_data) {
                 if (bk_data.code === 200) {
                     layer.msg(bk_data.msg, {icon: 6});
-                    // 延迟两秒跳转
+                    // 延迟1秒跳转
                     setTimeout(function () {
                         window.location.replace("/"+bk_data.data+"/Index/index");
-                    },2*1000);
+                    },1000);
                 }
                 else {
                     layer.msg(bk_data.msg, {icon: 5});
