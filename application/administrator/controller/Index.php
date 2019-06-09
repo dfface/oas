@@ -2,19 +2,20 @@
 
 namespace app\administrator\controller;
 
+
+use PHPExcel_IOFactory;
+use PHPExcel;
+use think\facade\Env;
 use app\common\model\File;
 use think\Db;
 use app\common\model\Course;
 use app\common\model\Question;
 use think\Controller;
-use think\facade\Env;
 use think\facade\Session;
 use app\common\model\User;
 use app\common\model\Take;
 use app\common\model\Reply;
 use app\common\model\Carousel;
-use PHPExcel_IOFactory;
-use PHPExcel;
 class Index extends Controller
 {
     /**
@@ -45,12 +46,16 @@ class Index extends Controller
         $admin_count  = User::where('role = 2 or role = 3')->select()->count();
         $question_count = Question::where('1=1')->select()->count();
         $reply_count = Reply::where('1=1')->select()->count();
+        $course_count = Course::where('1=1')->select()->count();
+        $take_count = Take::where('1=1')->select()->count();
         $viewData=[
             'student_count' => $student_count,
             'teacher_count' => $teacher_count,
             'admin_count' => $admin_count,
             'question_count' => $question_count,
-            'reply_count' => $reply_count
+            'reply_count' => $reply_count,
+            'course_count' => $course_count,
+            'take_count' => $take_count
         ];
         $this->assign($viewData);
         return $this->fetch();
@@ -193,10 +198,13 @@ class Index extends Controller
         }
         return json($result);
     }
+
     /**
      * Method batchAdd
      * @purpose 文件上传写入数据库
      * @return \think\response\Json
+     * @throws \PHPExcel_Exception
+     * @throws \PHPExcel_Reader_Exception
      */
     public function batchAdd() {
         //上传excel文件
@@ -263,7 +271,6 @@ class Index extends Controller
                 //将数据保存到数据库
             }
             $res = Db::name('user')->strict(false)->insertAll($data);
-            //if($this->error())
             $result = ['code'=>SUCCESS,'msg' =>'导入成功',"data"=>""];
             return json($result);
 
@@ -273,31 +280,31 @@ class Index extends Controller
                 $data[$i]['cou_id'] = $sheet->getCell("B".$i)->getValue();
             }
             $res = Db::name('take')->strict(false)->insertAll($data);
-            //if($this->error())
             $result = ['code'=>SUCCESS,'msg' =>'导入成功',"data"=>""];
             return json($result);
         }elseif($type == 'course'){
             for ($i = 1; $i <= $row_num; $i ++) {
                 $data[$i]['id']  = $sheet->getCell("A".$i)->getValue();
                 $data[$i]['tea_id'] = $sheet->getCell("B".$i)->getValue();
-                $data[$i]['name'] =  password_hash($sheet->getCell("C".$i)->getValue(),PASSWORD_DEFAULT);
+                $data[$i]['name'] = $sheet->getCell("C".$i)->getValue();
                 $data[$i]['semester'] = $sheet->getCell("D".$i)->getValue();
                 $data[$i]['year'] = $sheet->getCell("E".$i)->getValue();
                 $data[$i]['status'] = $sheet->getCell("F".$i)->getValue();
                 //将数据保存到数据库
             }
-            $res = Db::name('course')->strict(false)->insertAll($data);
-            //if($this->error())
+            unlink( $filePath);
+            $res = Db::name('course')->insertAll($data);
             $result = ['code'=>SUCCESS,'msg' =>'导入成功',"data"=>""];
             return json($result);
 
         }
 
     }
+
     /**
      * Method doUserEdit
      * @purpose 修改用户信息
-     */
+    */
     public function doUserEdit(){
         $this->roleCheck();
         //获取要修改的信息，其中除密码外所有信息若不修改都由旧信息顶替
@@ -470,8 +477,8 @@ class Index extends Controller
         }
         else{
             $where=[
-              ['role' ,'=', '1'],
-              ['id','=',$data['tea_id']]
+                ['role' ,'=', '1'],
+                ['id','=',$data['tea_id']]
             ];
             $teachers_count = User::where($where)->select()->count();
             if($teachers_count === 0)
