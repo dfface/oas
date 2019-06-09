@@ -1,0 +1,64 @@
+{block name="import"}
+{css href="/static/bootstrap/css/bootstrap.css"}
+{css href="/static/carousel.css"}
+{css href="/static/layui/css/layui.css"}
+{css href="/static/editor/css/editormd.min.css"}
+{js href="/static/jquery-3.4.1.js"}
+{js href="/static/bootstrap/js/bootstrap.js"}
+{js href="/static/popper.min.js"}
+{js href="/static/layui/layui.js"}
+{js href="/static/editor/editormd.min.js"}
+{/block}
+
+{block name="body"}
+<div class="container my-5 pt-3">
+    <div class="row">
+        <div class="col">
+            <form action="javascript:" method="post">
+                <input type="hidden" id="id" value="{$reply.id}" />
+                <div class="form-group">
+                    <label for="editor"></label>
+                    <div id="editor">
+                        <textarea style="display:none;" >{$reply.content}</textarea>
+                    </div>
+                </div>
+                <button id="ask" class="btn btn-primary btn-block" type="submit">修改</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        var editor = editormd("editor", {
+            height: "400px",
+            path : "/static/editor/lib/",  // Autoload modules mode, codemirror, marked... dependents libs path
+            mode : "gfm",
+            emoji : true,
+            imageUpload    : true,
+            imageFormats   : ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+            imageUploadURL : "{:url('index/Index/imageUpload')}",
+        });
+        $('#ask').click(function () {
+            var id = $('#id').val();
+            var title = $('#title').val();
+            var content = editor.getMarkdown();
+            var data = {"id": id, "content": content};
+            $.post("{:url('administrator/Index/doReplyContentEdit')}", data,function (back_data) {
+                if(back_data.code === 200){
+                    layui.use('layer',function () {
+                        var layer = layui.layer;
+                        layer.msg(back_data.msg, {icon: 6});
+                    });
+                }
+                else{
+                    layui.use('layer',function () {
+                        var layer = layui.layer;
+                        layer.msg(back_data.msg, {icon: 5});
+                    });
+                }
+            });
+        });
+    });
+</script>
+{/block}

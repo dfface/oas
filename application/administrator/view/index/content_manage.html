@@ -96,6 +96,7 @@
 </script>
 {// 每行工具栏}
 <script type="text/html" id="bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
     <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>
     <a class="layui-btn layui-btn-danger layui-btn-xs text-white" lay-event="delete" id="user-del">删除</a>
 </script>
@@ -112,37 +113,19 @@
             var table = layui.table;
             var form = layui.form;
             var fn1 = function(field,table){
-              return function(data){
-                  var value = data[field];
-                  if(field === 'content'){
-                      var result = [
-                          '<div class="row justify-content-center pt-5">',
-                          '    <div class="col">',
-                          '<div id="question" class="card">'+
-                          '   <div class="card-body">'+
-                          '        <div class="card-text" id="editor-view">'+
-                          '            <textarea height="10px" width="100px" style="display:none;">'+value+'</textarea>'+
-                          '        </div>'+
-                          '    </div>'+
-                          '</div>',
-                          '    </div>',
-                          '</div>',
+                return function(data){
+                    var value = data[field];
+                    if(field === 'status'){
+                        if(table === 'question'){
+                            var result =         ['<input type="checkbox" name="status" lay-skin="switch" lay-text="未解决|已解决" lay-filter="status_checkbox" value=" '+ value + '" '+ (value === 1?'checked':'')+'>'].join('');
+                            return result;
+                        }else{
+                            var result =         ['<input type="checkbox" name="status" lay-skin="switch" lay-text="未采纳|已采纳" lay-filter="status_checkbox" value=" '+ value + '" '+ (value === 1?'checked':'')+'>'].join('');
+                            return result;
 
-                      ].join('');
-                      return result;
-                  }else if(field === 'status'){
-                      var type = data[table];
-                      if(type === 'question'){
-                          var result =         ['<input type="checkbox" name="status" lay-skin="switch" lay-text="未解决|已解决" lay-filter="status_checkbox" value=" '+ value + '" '+ (value === 1?'checked':'')+'>'].join('');
-                          return result;
-
-                      }else{
-                          var result =         ['<input type="checkbox" name="status" lay-skin="switch" lay-text="未采纳|已采纳" lay-filter="status_checkbox" value=" '+ value + '" '+ (value === 1?'checked':'')+'>'].join('');
-                          return result;
-
-                      }
-                  }
-              }
+                        }
+                    }
+                }
             };
             table.render({
                 id: 'questions',
@@ -151,16 +134,16 @@
                 toolbar: '#toolbar',
                 title: '问题列表',
                 cols: [[
-                    {field: 'id', title: '编号', fixed: 'left', sort: true },
-                    {field: 'stu_id', title: '学生编号', sort: true,},
-                    {field: 'course_id', title: '课程编号',},
-                    {field: 'title', title: '问题标题'},
-                    {field: 'content', title: '提问内容'},
+                    {field: 'id', title: '编号',width:70, fixed: 'left', sort: true },
+                    {field: 'stu_id', title: '学生编号', width:100,sort: true,},
+                    {field: 'course_id', title: '课程编号',width:100,},
+                    {field: 'title', title: '问题标题',width:150,},
+                    {field: 'content', title: '提问内容',width:200,},
                     {
-                        field: 'status', title: '状态', edit: false, sort: true, templet: fn1('status','question')
+                        field: 'status', title: '状态', edit: false, sort: true, templet: fn1('status','question'),width:110,
                     },
-                    {field: 'create_time', title: '创建时间', sort: true},
-                    {field: 'update_time', title: '更新时间', sort: true},
+                    {field: 'create_time', title: '创建时间', sort: true,width:100,},
+                    {field: 'update_time', title: '更新时间', sort: true,width:100,},
                     {fixed: 'right', title:'操作', toolbar: '#bar'},
                 ]],
                 page: true,
@@ -172,16 +155,15 @@
                 toolbar: '#toolbar',
                 title: '回复列表',
                 cols: [[
-                    {field: 'id', title: '编号', fixed: 'left', sort: true },
-                    {field: 'que_id', title: '问题编号', sort: true},
-                    {field: 'use_id', title: '提问者编号',},
-                    {field: 'content', title: '回复内容',
-                        //templet:fn1('content')
+                    {field: 'id', title: '编号', fixed: 'left', sort: true,width:70 },
+                    {field: 'que_id', title: '问题编号', sort: true,width:100},
+                    {field: 'use_id', title: '提问者编号',width:100,},
+                    {field: 'content', title: '回复内容',width:350,
                     },
-                    {field: 'status', title: '状态',edit:false,sort: true, templet:fn1('status','reply')},
-                    {field: 'like_count', title: '点赞数',edit:false},
-                    {field: 'dislike_count', title: '排砖数',edit:false},
-                    {fixed: 'right', title:'操作', toolbar: '#bar'},
+                    {field: 'status', title: '状态',edit:false,sort: true, templet:fn1('status','reply'),width:110},
+                    {field: 'like_count', title: '点赞数',edit:false,width:80},
+                    {field: 'dislike_count', title: '拍砖数',edit:false,width:80},
+                    {fixed: 'right', title:'操作', toolbar: '#bar',width:170},
                 ]],
                 page: true,
             });
@@ -214,8 +196,18 @@
                             }
                         })
                     })
-                } else if(layEvent === 'detail'){
+                }else if(layEvent === 'detail'){
                     window.open("{:url('index/Index/questionInspect')}"+"?question_id="+data.id,'_blank');
+                }else if(layEvent === 'edit'){
+                    layer.open({
+                        type: 2,
+                        title: '编辑问题内容',
+                        shadeClose: true,
+                        shade: 0.8,
+                        maxmin: true,
+                        area: ['90%', '90%'],
+                        content:'/administrator/index/questionContentEdit?id='+data.id ,
+                    });
                 }else{
                     layer.msg('出错了', {icon: 2});
                 }
@@ -239,6 +231,16 @@
                     })
                 } else if(layEvent === 'detail'){
                     window.open("{:url('index/Index/questionInspect')}"+"?question_id="+data.que_id,'_blank');
+                }else if(layEvent === 'edit'){
+                    layer.open({
+                        type: 2,
+                        title: '编辑回复内容',
+                        shadeClose: true,
+                        shade: 0.8,
+                        maxmin: true,
+                        area: ['90%', '90%'],
+                        content:'/administrator/index/replyContentEdit?id='+data.id ,
+                    });
                 }else{
                     layer.msg('出错了', {icon: 2});
                 }

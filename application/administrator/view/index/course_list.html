@@ -83,8 +83,8 @@
 {// 渲染}
 <script>
     $(function () {
-        layui.config({base: 'test/js/'})
-            .use(['testTablePlug','element','laydate','table'], function() {
+        layui.config({base:'/static/layuiTablePlug/test/js/'})
+                .use(['testTablePlug','element','laydate','table'], function() {
             var element = layui.element;
             var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
             var table = layui.table;
@@ -127,7 +127,7 @@
                             format: 'yyyy',
                             done: function (value, date) {
                                 var trElem = $(this.elem[0]).closest('tr');
-                                table.cache.courses[trElem.data('index')]['birthday'] = value;
+                                table.cache.courses[trElem.data('index')]['year'] = value;
                                 console.log(value);
                                 console.log(table.cache.courses[trElem.data('index')]['id'] );
                                 var id = table.cache[tableView.attr('lay-id')][trElem.data('index')].id;
@@ -170,9 +170,8 @@
                 var role = -1;
                 var search_field = $('#search_field').val();
                 var search_field_value = $('#search_field_value').val();
-                console.log(search_field,search_field_value);
                 table.reload('courses',{
-                    url: "{:url('administrator/Index/doSearch')}",
+                    url: "{:url('/administrator/Index/doSearch')}",
                     where:{role: role, search_table: 'course',search_field:search_field,search_field_value:search_field_value},
                     page:{curr:1}
                 },'data');
@@ -202,19 +201,37 @@
                 page: true,
             });
             //课程的编辑
-            table.on('edit(courses)', function(obj){
-                var value = obj.value //得到修改后的值
-                    ,data = obj.data //得到所在行所有键值
-                    ,field = obj.field; //得到字段
-                $.post("{:url('administrator/Index/courseEdit')}",{"id": data.id,"value":value,"field":field}, function (bk_data) {
-                    if(bk_data.code === 200) {
-                        layer.msg(bk_data.msg,{icon: 6});
-                    }
-                    else {
-                        layer.msg(bk_data.msg, {icon: 5});
-                    }
-                })
-            });
+                table.on('edit(courses)', function(obj){
+                    var value = obj.value //得到修改后的值
+                        ,data = obj.data //得到所在行所有键值
+                        ,field = obj.field; //得到字
+                    var tableId = obj.tr.closest('.layui-table-view').attr('lay-id');
+                    var trIndex = obj.tr.data('index');
+                    var that = this;
+                    var tdElem = $(that).closest('td');
+                    layer.confirm("确定修改此内容吗？",{btn:['确认','取消']},function(bk_data){
+                            $.post("{:url('administrator/Index/courseEdit')}",{"id": data.id,"value":value,"field":field}, function (bk_data) {
+                                if(bk_data.code === 200) {
+                                    table.cache[tableId][trIndex][tdElem.data('field')] = value;
+                                    layer.msg(bk_data.msg,{icon: 6});
+                                }
+                                else {
+                                    switch (field) {
+                                        case 'tea_id':obj.update({tea_id: table.cache[tableId][trIndex][tdElem.data('field')]});break;
+                                        case 'name':obj.update({name: table.cache[tableId][trIndex][tdElem.data('field')]});break;
+                                    }
+                                    layer.msg(bk_data.msg, {icon: 5});
+                                }
+                            })
+                        },
+                        function(){
+                            switch (field) {
+                                case 'tea_id':obj.update({tea_id: table.cache[tableId][trIndex][tdElem.data('field')]});break;
+                                case 'name':obj.update({name: table.cache[tableId][trIndex][tdElem.data('field')]});break;
+                            }
+
+                        });
+                });
             //课程的删除
             table.on('tool(courses)', function (obj) {
                 var data = obj.data;
@@ -242,15 +259,41 @@
                 var value = obj.value //得到修改后的值
                     ,data = obj.data //得到所在行所有键值
                     ,field = obj.field; //得到字段
-                console.log(data.cou_id);
-                $.post("{:url('administrator/Index/takeEdit')}",{"stu_id": data.stu_id,"cou_id":data.cou_id,"value":value,"field":field}, function (bk_data) {
-                    if(bk_data.code === 200) {
-                        layer.msg(bk_data.msg + field + ' 字段更改为：'+ value);
+                var tableId = obj.tr.closest('.layui-table-view').attr('lay-id');
+                var trIndex = obj.tr.data('index');
+                var that = this;
+                var tdElem = $(that).closest('td');
+                layer.confirm("确定修改此内容吗？",{btn:['确认','取消']},function() {
+                    $.post("{:url('administrator/Index/takeEdit')}", {
+                        "stu_id": data.stu_id,
+                        "cou_id": data.cou_id,
+                        "value": value,
+                        "field": field
+                    }, function (bk_data) {
+                        if (bk_data.code === 200) {
+                            layer.msg(bk_data.msg, {icon: 6});
+                        } else {
+                            switch (field) {
+                                case 'stu_id':
+                                    obj.update({stu_id: table.cache[tableId][trIndex][tdElem.data('field')]});
+                                    break;
+                                case 'cou_id':
+                                    obj.update({cou_id: table.cache[tableId][trIndex][tdElem.data('field')]});
+                                    break;
+                            }
+                            layer.msg(bk_data.msg, {icon: 5});
+                        }
+                    })
+                },function(){
+                    switch (field) {
+                        case 'stu_id':
+                            obj.update({stu_id: table.cache[tableId][trIndex][tdElem.data('field')]});
+                            break;
+                        case 'cou_id':
+                            obj.update({cou_id: table.cache[tableId][trIndex][tdElem.data('field')]});
+                            break;
                     }
-                    else {
-                        layer.msg(bk_data.msg, {icon: 5});
-                    }
-                })
+                });
             });
             //选课记录的删除
             table.on('tool(takes)', function (obj) {

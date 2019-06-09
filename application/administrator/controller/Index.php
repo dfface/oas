@@ -7,11 +7,14 @@ use think\Db;
 use app\common\model\Course;
 use app\common\model\Question;
 use think\Controller;
+use think\facade\Env;
 use think\facade\Session;
 use app\common\model\User;
 use app\common\model\Take;
 use app\common\model\Reply;
 use app\common\model\Carousel;
+use PHPExcel_IOFactory;
+use PHPExcel;
 class Index extends Controller
 {
     /**
@@ -37,7 +40,20 @@ class Index extends Controller
     */
     public function index(){
         $this->roleCheck();
-         return $this->fetch();
+        $student_count = User::where("role = 0 ")->select()->count();
+        $teacher_count = User::where('role = 1')->select()->count();
+        $admin_count  = User::where('role = 2 or role = 3')->select()->count();
+        $question_count = Question::where('1=1')->select()->count();
+        $reply_count = Reply::where('1=1')->select()->count();
+        $viewData=[
+            'student_count' => $student_count,
+            'teacher_count' => $teacher_count,
+            'admin_count' => $admin_count,
+            'question_count' => $question_count,
+            'reply_count' => $reply_count
+        ];
+        $this->assign($viewData);
+        return $this->fetch();
     }
 
     /**
@@ -166,7 +182,7 @@ class Index extends Controller
             'password' => password_hash($data['password'],PASSWORD_DEFAULT),
             'role' => $data['role']."",
             'email' => $data['email']."",
-            'avatar' => 'https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=2779942948,1955954400&fm=26&gp=0.jpg',
+            'avatar' => '/images/logo.png',
             'profile' => $data['profile'].""
         ]);
         if($user != null){
@@ -176,6 +192,107 @@ class Index extends Controller
             $result = ['code' => FAILURE, 'msg' => "用户创建失败，请待会儿重试"];
         }
         return json($result);
+    }
+    /**
+     * Method batchAdd
+     * @purpose 文件上传写入数据库
+     * @return \think\response\Json
+     */
+    public function batchAdd() {
+        //上传excel文件
+        $this->roleCheck();
+        $file = $this->request->file('excel');
+        $type = input('type');
+        //将文件保存到public/uploads目录下面
+        if($file === NULL){
+            $result = ['code'=>FAILURE,'msg' =>'文件接收失败','data'=>""];
+            return json($result);
+        }
+        $info = $file->validate(['size'=>1048576,'ext'=>'xls,xlsx'])->move( './uploads');
+        if($info){
+            //获取上传到后台的文件名
+            $fileName = $info->getSaveName();
+            if($fileName===""){
+                $result = ['code' => FAILURE,'msg'=>'文件名解析错误'];
+            }
+            //获取文件路径
+            $filePath = Env::get('root_path').'public'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.$fileName;
+            if($filePath==""){
+                $result = ['code' => SUCCESS,'msg'=>$filePath];
+                return json($result);
+            }
+            //获取文件后缀
+            $suffix = $info->getExtension();
+            //判断哪种类型
+            if($suffix=="xlsx"){
+                $reader = \PHPExcel_IOFactory::createReader('Excel2007');
+                if($reader==null){
+                    $result = ['code'=> FAILURE,'msg'=>'excel阅读器创建错误'];
+                    return json($result);
+                }
+            }elseif($suffix=="xls"){
+                $reader = PHPExcel_IOFactory::createReader('Excel5');
+            }else{
+                $result = ['code'=>FAILURE,'msg'=>'请上传excel表'];
+                return json($result);
+            }
+        }else{
+            $result = ['code'=>FAILURE,'msg' =>'文件过大或格式不正确导致上传失败-_-!','data'=>""];
+            return json($result);
+        }
+        //载入excel文件
+
+        $excel = $reader->load("$filePath",$encode = 'utf-8');
+        //读取第一张表
+        $sheet = $excel->getSheet(0);
+        //获取总行数
+        $row_num = $sheet->getHighestRow();
+        //获取总列数
+        $col_num = $sheet->getHighestColumn();
+        $data = []; //数组形式获取表格数据
+
+        if($type == 'user'){
+            for ($i = 1; $i <= $row_num; $i ++) {
+                $data[$i]['id']  = $sheet->getCell("A".$i)->getValue();
+                $data[$i]['name'] = $sheet->getCell("B".$i)->getValue();
+                $data[$i]['password'] =  password_hash($sheet->getCell("C".$i)->getValue(),PASSWORD_DEFAULT);
+                $data[$i]['role'] = $sheet->getCell("D".$i)->getValue();
+                $data[$i]['email'] = $sheet->getCell("E".$i)->getValue();
+                $data[$i]['avatar'] = $sheet->getCell("F".$i)->getValue();
+                $data[$i]['profile'] = $sheet->getCell("G".$i)->getValue();
+                //将数据保存到数据库
+            }
+            $res = Db::name('user')->strict(false)->insertAll($data);
+            //if($this->error())
+            $result = ['code'=>SUCCESS,'msg' =>'导入成功',"data"=>""];
+            return json($result);
+
+        }elseif($type == 'take'){
+            for ($i = 1; $i <= $row_num; $i ++) {
+                $data[$i]['stu_id']  = $sheet->getCell("A".$i)->getValue();
+                $data[$i]['cou_id'] = $sheet->getCell("B".$i)->getValue();
+            }
+            $res = Db::name('take')->strict(false)->insertAll($data);
+            //if($this->error())
+            $result = ['code'=>SUCCESS,'msg' =>'导入成功',"data"=>""];
+            return json($result);
+        }elseif($type == 'course'){
+            for ($i = 1; $i <= $row_num; $i ++) {
+                $data[$i]['id']  = $sheet->getCell("A".$i)->getValue();
+                $data[$i]['tea_id'] = $sheet->getCell("B".$i)->getValue();
+                $data[$i]['name'] =  password_hash($sheet->getCell("C".$i)->getValue(),PASSWORD_DEFAULT);
+                $data[$i]['semester'] = $sheet->getCell("D".$i)->getValue();
+                $data[$i]['year'] = $sheet->getCell("E".$i)->getValue();
+                $data[$i]['status'] = $sheet->getCell("F".$i)->getValue();
+                //将数据保存到数据库
+            }
+            $res = Db::name('course')->strict(false)->insertAll($data);
+            //if($this->error())
+            $result = ['code'=>SUCCESS,'msg' =>'导入成功',"data"=>""];
+            return json($result);
+
+        }
+
     }
     /**
      * Method doUserEdit
@@ -192,7 +309,6 @@ class Index extends Controller
         $password_confirm = $this->request->param('password_confirm');
         $email = $this->request->param('email');
         $profile = $this->request->param('profile');
-        $result='';
         if($email === "" and $password === "" and $name === "" and $profile === "" and $password_confirm === ""){
             $result= ["code" => FAILURE, "msg" => "请输入要修改的信息！"];
             return json($result);
@@ -208,7 +324,6 @@ class Index extends Controller
             else {
                 $result= ["code" => FAILURE, "msg" => "两次输入的密码不一致"];
                 return json($result);
-
             }
             if ($email === "") {
                 // 没有更新邮箱
@@ -407,6 +522,17 @@ class Index extends Controller
             'field'=> input('field'),
             'value'=>input('value')
         ];
+        if($data['field'] == 'tea_id' ){
+            $where = [
+                ['id','=',"".$data['value']],
+                ['role','=','1']
+            ];
+            $result = User::where($where)->select()->count();
+            if($result === 0){
+                $msg = ['code' => FAILURE, 'msg' => "没有id为".$data['value']."的教师"];
+                return json($msg);
+            }
+        }
         $result =  Db::table('course')->where('id', $data['id'])->update([$data['field'] => $data['value'] ]);
         if($result >0 ){
             $msg = ["code" => SUCCESS, "msg" => "成功修改!"];
@@ -473,25 +599,54 @@ class Index extends Controller
             'field'=> input('field'),
             'value'=>input('value')
         ];
-        if($data['cou_id'] ==="" and $data['stu_id'] === "")
+        if($data['value'] =="")
             return json(["code" => FAILURE, "msg" => "传入参数为空!"]);
         $result = Take::get(['stu_id'=> "".$data['stu_id'],'cou_id'=>"".$data['cou_id']]);
-        if($data['field'] = 'cou_id'){
-            $result->cou_id = $data['cou_id'];
-            $result->save();
-            return json(["code" => SUCCESS, "msg" => "成功修改了选课记录!"]);
-        }elseif($data['field'] = 'stu_id'){
-            $result->stu_id = $data['stu_id'];
-            $result->save();
-            return json(["code" => SUCCESS, "msg" => "成功修改了选课记录!"]);
-        }
-        if($result != 0){
-            $msg = ["code" => SUCCESS, "msg" => "成功修改!"];
-            return json($msg);
-        }
-        else{
-            $msg = ["code" => FAILURE, "msg" => "修改失败或未作修改!"];
-            return json($msg);
+        if($data['field'] == 'cou_id'){
+            //判断要修改的选课记录是否已经存在与数据库中
+            $alreadyHas = Take::get(['stu_id'=> "".$data['stu_id'],'cou_id'=>"".$data['value']]);
+            if($alreadyHas != null){
+                return json(['code'=>FAILURE,'msg'=>'已经存在该条选课记录']);
+            }
+            $where = [
+                ['id','=',"".$data['value']],
+            ];
+            $count = Course::where($where)->select()->count();
+            if($count == 1){
+                Take::create([
+                    'stu_id'=>$data['stu_id'],
+                    'cou_id'=>$data['value']
+                ]);
+                $result->delete();
+                $msg=['code'=> SUCCESS,'msg'=>'修改选课课程成功'];
+                return json($msg);
+            }else{
+                $msg=['code'=> FAILURE,'msg'=>'不存在这个课程id'];
+                return json($msg);
+            }
+        }elseif($data['field'] == 'stu_id'){
+            //判断要修改的选课记录是否已经存在与数据库中
+            $alreadyHas = Take::get(['stu_id'=> "".$data['value'],'cou_id'=>"".$data['cou_id']]);
+            if($alreadyHas != null){
+                return json(['code'=>FAILURE,'msg'=>'已经存在该条选课记录']);
+            }
+            $where = [
+                ['id','=',"".$data['value']],
+                ['role','=','0']
+            ];
+            $count = User::where($where)->select()->count();
+            if($count == 1){
+                Take::create([
+                    'stu_id'=>$data['value'],
+                    'cou_id'=>$data['cou_id']
+                ]);
+                $result->delete();
+                $msg=['code'=> SUCCESS,'msg'=>'修改选课学生id成功'];
+                return json($msg);
+            }else{
+                $msg=['code'=> FAILURE,'msg'=>'不存在这个学生id'];
+                return json($msg);
+            }
         }
     }
 
@@ -620,6 +775,64 @@ class Index extends Controller
     }
 
     /**
+     * @Method questionEdit
+     * @params
+     * @purpose 修改问题信息
+     */
+    public function questionEdit(){
+        $this->roleCheck();
+        $data=[
+            'id' => input('id'),
+            'field'=> input('field'),
+            'value'=>input('value')
+        ];
+        $result =  Db::table('question')->where('id', $data['id'])->update([$data['field'] => $data['value'] ]);
+        if($result != 0){
+            $msg = ["code" => SUCCESS, "msg" => "成功修改!"];
+            return json($msg);
+        }
+        else{
+            $msg = ["code" => FAILURE, "msg" => "修改失败或未作修改!"];
+            return json($msg);
+        }
+    }
+
+    /**
+     * Method questionContentEdit
+     * @purpose 展示问题标题和内容的编辑页面
+     */
+    public function questionContentEdit(){
+        $this->roleCheck();
+        $data['id']=[
+            'id' => input('id')
+        ];
+        $question = Question::get($data['id']);
+        $viewData=[
+            'question' => $question
+        ];
+        $this->assign($viewData);
+        return $this->fetch();
+    }
+
+    /**
+     * Method doQuestionContentEdit
+     */
+    public function doQuestionContentEdit(){
+        $this->roleCheck();
+        $data = [
+            'id' => input('id'),
+            'title' => input('title'),
+            'content'=> input('content')
+        ];
+        $question = Question::get($data['id']);
+        $question->title = $data['title'];
+        $question->content = $data['content'];
+        $question->save();
+        $result = ['code'=> SUCCESS,'msg'=> '修改成功！'];
+        return json($result);
+    }
+
+    /**
      * Method replyDelete
      * @purpose 管理员对回复的删除接口
      * @params id
@@ -632,6 +845,62 @@ class Index extends Controller
         $reply = reply::get($reply_id);
         $reply->delete();
         $result = ["code" => SUCCESS, "msg" => "成功删除!"];
+        return json($result);
+    }
+
+    /**
+     * @Method replyEdit
+     * @params
+     * @purpose 修改回复信息
+     */
+    public function replyEdit(){
+        $this->roleCheck();
+        $data=[
+            'id' => input('id'),
+            'field'=> input('field'),
+            'value'=>input('value')
+        ];
+        $result =  Db::table('reply')->where('id', $data['id'])->update([$data['field'] => $data['value'] ]);
+        if($result != 0){
+            $msg = ["code" => SUCCESS, "msg" => "成功修改!"];
+            return json($msg);
+        }
+        else{
+            $msg = ["code" => FAILURE, "msg" => "修改失败或未作修改!"];
+            return json($msg);
+        }
+    }
+
+    /**
+     * Method replyContentEdit
+     * @purpose 展示问题标题和内容的编辑页面
+     */
+    public function replyContentEdit(){
+        $this->roleCheck();
+        $data['id']=[
+            'id' => input('id')
+        ];
+        $reply = Reply::get($data['id']);
+        $viewData=[
+            'reply' => $reply
+        ];
+        $this->assign($viewData);
+        return $this->fetch();
+    }
+
+    /**
+     * Method doReplyContentEdit
+     */
+    public function doReplyContentEdit(){
+        $this->roleCheck();
+        $data = [
+            'id' => input('id'),
+            'content'=> input('content')
+        ];
+        $reply = Reply::get($data['id']);
+        $reply->content = $data['content'];
+        $reply->save();
+        $result = ['code'=> SUCCESS,'msg'=> '修改成功！'];
         return json($result);
     }
 
@@ -693,34 +962,50 @@ class Index extends Controller
     }
 
     /**
-     * @Method doCarouselADD
+     * @Method doCarouselAdd
      * @purpose 添加备选轮播图到数据库
     */
     public function  doCarouselAdd(){
         $this->roleCheck();
-        $data=[
-            'id'=> input('id'),
-            'url' =>input('url')
-        ];
-        if(strlen($data['id'])==0){
-            $result= ['code' => FAILURE,'msg'=> '轮播图编号不能为空'];
-            return json($result);
-        }else {
-            $carousel = Carousel::get($data['id']);
-            if($carousel!=null){
-                $result= ['code' => FAILURE,'msg'=> '轮播图编号已存在'];
-                return json($result);
-            }
+        $data=['url' =>input('url')];
+        if(strlen($data['url'])!=0){
+            Carousel::create(['url' => $data['url']]);
+            $result= ['code' => SUCCESS,'msg'=> '成功'];
         }
-        if(strlen($data['id'])==0){
-            $result= ['code' => FAILURE,'msg'=> '轮播图地址不能为空'];
-            return json($result);
+        else {
+            $result = ["code" => FAILURE, "msg" => "没有收到链接！"];
         }
-        Carousel::create([
-            'id' => $data['id']."",
-            'url' => $data['url'].""
-        ]);
-        $result= ['code' => SUCCESS,'msg'=> '轮播图添加成功'];
+        return json($result);
+    }
+
+    /**
+     * Method doCarouselUpload
+     * @purpose 轮播图上传
+     * @return \think\response\Json
+     */
+    public function doCarouselUpload() {
+        $this->roleCheck();
+        $file = $this->request->file('carousel');
+        $file_size = $file->getSize();
+        $info = $file->move('./images');
+        if ($info) {
+            // 注意图片的地址
+            $path = '/images/'.$info->getSaveName();
+            // 存入轮播图数据库
+            $carousel = Carousel::create(['url' => $path]);
+            // 写入文件表数据库
+            $file_db = new File();
+            $file_db->use_id = Session::get('id');
+            $file_db->name = "轮播图 ".$carousel->id;
+            $file_db->url = $path;
+            $file_db->desc = date('Y年m月d日')." 上传的轮播图";
+            $file_db->size = $file_size;
+            $file_db->save();
+            $result = ["code" => SUCCESS, "msg" => "成功"];
+        }
+        else {
+            $result = ["code" => FAILURE, "msg" => $info->getError()];
+        }
         return json($result);
     }
 
@@ -769,7 +1054,6 @@ class Index extends Controller
             'search_field' => input('search_field'),
             'search_field_value' => input('search_field_value')
         ];
-        $result ='';
         $page = $this->request->param('page');
         $num_per_page = $this->request->param('limit') ;
         $where = [

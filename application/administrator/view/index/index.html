@@ -1,1 +1,231 @@
-{extend name="./templates/base.html" /}
+{extend name="./templa{extend name="./templates/base.html"/}
+{block name="import"}
+{js href="/static/layuiadmin/layui/layui.js"}
+{css href="/static/layuiadmin/layui/css/layui.css"}
+{css href="/static/layuiadmin/style/admin.css"}
+{css href="/static/bootstrap/css/bootstrap.css"}
+{css href="/static/carousel.css"}
+{js href="/static/jquery-3.4.1.js"}
+{js href="/static/bootstrap/js/bootstrap.js"}
+{js href="/static/popper.min.js"}
+{js href="/static/layui/layui.js"}
+
+{/block}
+
+{block name="body"}
+<style type="text/css">
+    .relative {
+        position: relative;
+        left: 150px;
+        top: 0px;
+    }
+    .margin {
+        bottom:100px;
+    }
+</style>
+<div class="relative margin">
+
+    <div class="layui-fluid">
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-md8">
+                <div class="layui-row layui-col-space15">
+                    <div class="layui-col-md6">
+                        <div class="layui-card">
+                            <div class="layui-card-header">快捷方式</div>
+                            <div class="layui-card-body">
+
+                                <div class="layui-carousel layadmin-carousel layadmin-shortcut">
+                                    <div carousel-item>
+                                        <ul class="layui-row layui-col-space10">
+                                            <li class="layui-col-xs3">
+                                                <a lay-href="home/homepage1.html">
+                                                    <i class="layui-icon layui-icon-user user-import"></i>
+                                                    <cite>导入用户</cite>
+                                                </a>
+                                            </li>
+                                            <li class="layui-col-xs3">
+                                                <a lay-href="home/homepage2.html">
+                                                    <i class="layui-icon layui-icon-table take-import"></i>
+                                                    <cite>导入选课记录</cite>
+                                                </a>
+                                            </li>
+                                            <li class="layui-col-xs3">
+                                                <a lay-href="component/layer/list.html">
+                                                    <i class="layui-icon layui-icon-template-1 course-import"></i>
+                                                    <cite>导入课程</cite>
+                                                </a>
+                                            </li>
+                                            <li class="layui-col-xs3">
+                                                <a layadmin-event="im">
+                                                    <a href="/index/Index/history"><i class="layui-icon layui-icon-log"></i></a>
+                                                    <cite style="font-style:normal" >查看历史</cite>
+                                                </a>
+                                            </li>
+                                            <li class="layui-col-xs3">
+                                                <a lay-href="">
+                                                    <a href="/administrator/Index/userList"><i class="layui-icon layui-icon-user"></i></a>
+                                                    <cite style="font-style:normal">用户管理</cite>
+                                                </a>
+                                            </li>
+                                            <li class="layui-col-xs3">
+                                                <a lay-href="">
+                                                    <a href="/administrator/Index/courseList"><i class="layui-icon layui-icon-list"></i></a>
+                                                    <cite style="font-style:normal">课程管理</cite>
+                                                </a>
+                                            </li>
+                                            <li class="layui-col-xs3">
+                                                <a lay-href="">
+                                                    <a href="/administrator/Index/contentManage"><i class="layui-icon layui-icon-reply-fill"></i></a>
+                                                    <cite style="font-style:normal">内容管理</cite>
+                                                </a>
+                                            </li>
+                                            <li class="layui-col-xs3">
+                                                <a lay-href="">
+                                                    <a href="/index/Index/informationModify"><i class="layui-icon layui-icon-edit"></i></a>
+                                                    <cite style="font-style:normal">修改资料</cite>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <ul class="layui-row layui-col-space10">
+                                            <li class="layui-col-xs3">
+                                                <a lay-href="">
+                                                    <a href="/index/Index/search"><i class="layui-icon layui-icon-search"></i></a>
+                                                    <cite style="font-style:normal">内容搜索</cite>
+                                                </a>
+                                            </li>
+                                        </ul>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-col-md6">
+                        <div class="layui-card">
+                            <div class="layui-card-header">数据统计</div>
+                            <div class="layui-card-body">
+
+                                <div class="layui-carousel layadmin-carousel layadmin-backlog">
+                                    <div carousel-item>
+                                        <ul class="layui-row layui-col-space10">
+                                            <li class="layui-col-xs6">
+                                                <a lay-href="app/content/comment.html" class="layadmin-backlog-body">
+                                                    <h3>学生总数</h3>
+                                                    <p><cite>{$student_count}</cite></p>
+                                                </a>
+                                            </li>
+                                            <li class="layui-col-xs6">
+                                                <a lay-href="app/forum/list.html" class="layadmin-backlog-body">
+                                                    <h3>教师总数</h3>
+                                                    <p><cite>{$teacher_count}</cite></p>
+                                                </a>
+                                            </li>
+                                            <li class="layui-col-xs6">
+                                                <a lay-href="template/goodslist.html" class="layadmin-backlog-body">
+                                                    <h3>管理员总数</h3>
+                                                    <p><cite>{$admin_count}</cite></p>
+                                                </a>
+                                            </li>
+                                            <li class="layui-col-xs6">
+                                                <a href="/administrator/Index/contentManage#reply"  class="layadmin-backlog-body">
+                                                    <h3>问题总数</h3>
+                                                    <p><cite >{$question_count}</cite></p>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <ul class="layui-row layui-col-space10">
+                                            <li class="layui-col-xs6">
+                                                <a href="javascript:;" class="layadmin-backlog-body">
+                                                    <h3>回复总数</h3>
+                                                    <p><cite >{$reply_count}</cite></p>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+    layui.config({
+        base: '/static/layuiadmin/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index','upload', 'console'],function()
+    {
+        var table = layui.table;
+        var upload = layui.upload;
+        upload.render({
+            elem:'.user-import',
+            method:'post',
+            url:'/administrator/Index/batchAdd',
+            data:{type:'user'},
+            accept:'file',
+            type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            field:'excel',
+            exts:"xlsx|xls",
+            method:'post',
+            size:1024*5,
+            done:function(res){
+                if(res.code == 200){
+                    layer.msg(res.msg,{icon:6});
+                }
+                else{
+                    layer.msg(res.msg,{icon:5});
+                }
+            }
+        });
+        upload.render({
+            elem:'.take-import',
+            method:'post',
+            url:'/administrator/Index/batchAdd',
+            data:{type:'take'},
+            accept:'file',
+            type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            field:'excel',
+            exts:"xlsx|xls",
+            method:'post',
+            size:1024*5,
+            done:function(res){
+                if(res.code == 200){
+                    layer.msg(res.msg,{icon:6});
+                }
+                else{
+                    layer.msg(res.msg,{icon:5});
+                }
+            }
+        });
+        upload.render({
+            elem:'.course-import',
+            method:'post',
+            url:'/administrator/Index/batchAdd',
+            data:{type:'course'},
+            accept:'file',
+            type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            field:'excel',
+            exts:"xlsx|xls",
+            method:'post',
+            size:1024*5,
+            done:function(res){
+                if(res.code == 200){
+                    layer.msg(res.msg,{icon:6});
+                }
+                else{
+                    layer.msg(res.msg,{icon:5});
+                }
+            }
+        });
+    });
+
+</script>
+
+{/block}tes/base.html" /}
