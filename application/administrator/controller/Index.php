@@ -776,8 +776,7 @@ class Index extends Controller
 
     /**
      * @Method questionEdit
-     * @params
-     * @purpose 修改问题信息
+     * @purpose 修改问题状态
      */
     public function questionEdit(){
         $this->roleCheck();
@@ -799,10 +798,33 @@ class Index extends Controller
 
     /**
      * Method questionContentEdit
-     * @purpose 展示问题标题和内容的编辑页面
+     * @purpose 展示问题标题和内容的编辑页面 增加学生接口
      */
     public function questionContentEdit(){
-        $this->roleCheck();
+        // 获取问题id
+        $question_id = $this->request->param('id');
+        // 找到学生问题
+        $question = Question::get($question_id);
+        // 获取用户id
+        $id = Session::get('id');
+        // 身份检查
+        if(Session::get('role') === ROLE_ADMINISTRATOR ){
+        }
+        elseif(Session::get('role') === ROLE_SUPER_ADMINISTRATOR){
+        }
+        elseif(Session::get('role') === ROLE_STUDENT){
+            if ($question->stu_id == $id) {
+            }
+            else {
+                $result = ["code" => FAILURE, "msg" => "没有权限!"];
+                return json($result);
+            }
+        }
+        else{
+            $result = ["code" => FAILURE, "msg" => "没有权限!"];
+            return json($result);
+        }
+        // 以上都是身份检查
         $data['id']=[
             'id' => input('id')
         ];
@@ -816,9 +838,33 @@ class Index extends Controller
 
     /**
      * Method doQuestionContentEdit
+     * @purpose 问题内容修改到数据库 增加学生接口
      */
     public function doQuestionContentEdit(){
-        $this->roleCheck();
+        // 获取问题id
+        $question_id = $this->request->param('id');
+        // 找到学生问题
+        $question = Question::get($question_id);
+        // 获取用户id
+        $id = Session::get('id');
+        // 身份检查
+        if(Session::get('role') === ROLE_ADMINISTRATOR ){
+        }
+        elseif(Session::get('role') === ROLE_SUPER_ADMINISTRATOR){
+        }
+        elseif(Session::get('role') === ROLE_STUDENT){
+            if ($question->stu_id == $id) {
+            }
+            else {
+                $result = ["code" => FAILURE, "msg" => "没有权限!"];
+                return json($result);
+            }
+        }
+        else{
+            $result = ["code" => FAILURE, "msg" => "没有权限!"];
+            return json($result);
+        }
+        // 以上都是身份检查
         $data = [
             'id' => input('id'),
             'title' => input('title'),
@@ -873,10 +919,28 @@ class Index extends Controller
 
     /**
      * Method replyContentEdit
-     * @purpose 展示问题标题和内容的编辑页面
+     * @purpose 展示回复标题和内容的编辑页面 增加所有用户统一接口
      */
     public function replyContentEdit(){
-        $this->roleCheck();
+        // 获取回复id
+        $reply_id = $this->request->param('id');
+        // 找到回复
+        $reply = Reply::get($reply_id);
+        // 获取用户id
+        $id = Session::get('id');
+        // 身份检查
+        if(Session::get('role') === ROLE_ADMINISTRATOR ){
+        }
+        elseif(Session::get('role') === ROLE_SUPER_ADMINISTRATOR){
+        }
+        // 如果当前用户是该回复的属主
+        elseif($reply->use_id == $id){
+        }
+        else{
+            $result = ["code" => FAILURE, "msg" => "没有权限!"];
+            return json($result);
+        }
+        // 以上都是身份检查
         $data['id']=[
             'id' => input('id')
         ];
@@ -890,9 +954,28 @@ class Index extends Controller
 
     /**
      * Method doReplyContentEdit
+     * @purpose 回复内容修改到数据库 增加所有用户统一接口
      */
     public function doReplyContentEdit(){
-        $this->roleCheck();
+        // 获取回复id
+        $reply_id = $this->request->param('id');
+        // 找到回复
+        $reply = Reply::get($reply_id);
+        // 获取用户id
+        $id = Session::get('id');
+        // 身份检查
+        if(Session::get('role') === ROLE_ADMINISTRATOR ){
+        }
+        elseif(Session::get('role') === ROLE_SUPER_ADMINISTRATOR){
+        }
+        // 如果当前用户是该回复的属主
+        elseif($reply->use_id == $id){
+        }
+        else{
+            $result = ["code" => FAILURE, "msg" => "没有权限!"];
+            return json($result);
+        }
+        // 以上都是身份检查
         $data = [
             'id' => input('id'),
             'content'=> input('content')
@@ -925,7 +1008,6 @@ class Index extends Controller
             $data[$key]['status']         = $reply->status;
             $data[$key]['like_count']=$reply->like_count;
             $data[$key]['dislike_count']  = $reply->dislike_count;
-            $data[$key]['is_second_reply']  = $reply->is_second_reply;
         }
         //适应layui接口
         $result = ["code" => 0,"msg" =>"成功","count" => $replies_count, "data" => $data];

@@ -11,7 +11,7 @@
 {/block}
 
 {block name="body"}
-<div class="container my-5 pt-3">
+<div class="container my-3">
     <div class="row">
         <div class="col">
             <form action="javascript:" method="post">
@@ -53,9 +53,11 @@
                     layui.use('layer',function () {
                         var layer = layui.layer;
                         layer.msg(back_data.msg, {icon: 6});
-                    });
-                    //window.location.replace("{:url('adminis/Index/questionInspect')}"+"?question_id="+back_data.data);
-                }
+                        setTimeout(function () {
+                            var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                            parent.layer.close(index); //再执行关闭
+                        },1000);
+                    });}
                 else{
                     layui.use('layer',function () {
                         var layer = layui.layer;
