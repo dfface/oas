@@ -35,6 +35,7 @@
                 cols: [[
                     {field: 'id', title: '编号', fixed: 'left', sort: true},
                     {field: 'title', title: '标题', sort: true},
+                    {field: 'reply', title: '回复', sort: true,templet: '#repTpl'},
                     {field: 'status', title: '状态', sort: true,templet: '#staTpl'},
                     {fixed: 'right', title:'操作', toolbar: '#bar'},
                 ]],
@@ -56,9 +57,21 @@
 
 <script type="text/html" id="staTpl">
     {{#  if(d.status === '已解决'){ }}
-    <span style="color: #f52a23;">{{ d.status }}</span>
+    <span style="color: #06f549;">{{ d.status }}</span>
+    {{#  } else if(d.status === '未解决'){ }}
+    <span style="color: #f5120a;">{{ d.status }}</span>
     {{#  } else { }}
     {{ d.status }}
+    {{#  } }}
+</script>
+
+<script type="text/html" id="repTpl">
+    {{#  if(d.reply === '已回答'){ }}
+    <span style="color: #11f500;">{{ d.reply }}</span>
+    {{#  } else if(d.reply === '未回答'){ }}
+    <span style="color: #001cf5;">{{ d.reply }}</span>
+    {{#  } else { }}
+    {{ d.reply }}
     {{#  } }}
 </script>
 

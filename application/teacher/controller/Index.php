@@ -53,7 +53,7 @@ class Index extends Controller
             'unsolved_course' => $sum,
             'solved_course' => ($sum1-$sum),
             'replys' => $replys,
-            'courses' => $course->count()
+            'courses' => $courses->count()
         ];
         $this->assign($viewData);
         return $this->fetch();
@@ -125,6 +125,7 @@ class Index extends Controller
     public function questionTable(){
         $this->roleCheck();
         $id = input('course_id');
+        $tea_id = Session::get('id');
         $map['course_id']=$id;
         $page = $this->request->param('page');
         $num_per_page = $this->request->param('limit');
@@ -134,6 +135,15 @@ class Index extends Controller
         foreach ($questions as $key => $question) {
             $data[$key]['id']=$question->id;
             $data[$key]['title']=$question->title;
+            $map1['use_id'] = $tea_id;
+            $map1['que_id'] = $question->id;
+            $reply = Reply::where($map1)->count();
+            if($reply == 0){
+                $data[$key]['reply']="未回答";
+            }
+            else{
+                $data[$key]['reply']="已回答";
+            }
             if($question->status==0){
                 $data[$key]['status']="未解决";
             }
