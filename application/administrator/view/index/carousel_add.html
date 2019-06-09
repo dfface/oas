@@ -1,20 +1,25 @@
 {extend name="./templates/base.html"/}
 
 {block name="body"}
-<div class="container my-5 pt-3">
+<div class="container my-5 pt-5">
     <div class="row">
         <div class="col">
+            <h3 class="my-3">方式一：手动输入轮播图地址</h3>
             <form action="javascript:" method="post">
                 <div class="form-group">
-                    <label for="id">轮播图编号</label>
-                    <input type="text" class="form-control" id="id" name="id" placeholder="eg.M1000" />
-                </div>
-                <div class="form-group">
-                    <label for="url">轮播图地址</label>
-                    <input type="text" class="form-control" id="url" name="url" placeholder="eg.http:/oas.com/images/1.png" />
+                    <input type="text" class="form-control" id="url" name="url" placeholder="例如：http:/oas.com/images/1.png" />
                 </div>
                 <button id="add" class="btn btn-primary btn-block" type="submit">添加</button>
             </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <h3 class="my-3">方式二：上传轮播图</h3>
+            <div class="text-center">
+                <hr class="my-4">
+                <button id="carouselUpload" class="btn btn-primary btn-block" type="submit"><i class="layui-icon">&#xe67c;</i>上传轮播图</button>
+            </div>
         </div>
     </div>
 </div>
@@ -25,14 +30,12 @@
             $.each($('form').serializeArray(),function () {
                 data[this.name] = this.value;
             });
-            console.log(data);
             $.post("{:url('administrator/Index/doCarouselAdd')}", JSON.parse(JSON.stringify(data)),function (back_data) {
                 if(back_data.code === 200){
                     layui.use('layer',function () {
                         var layer = layui.layer;
                         layer.msg(back_data.msg, {icon: 6});
                     });
-                    window.location.replace("{:url('administrator/Index/contentManage')}");
                 }
                 else{
                     layui.use('layer',function () {
@@ -41,6 +44,25 @@
                     });
                 }
             });
+        });
+    });
+    layui.use(['upload','layer','element'],function () {
+        var upload = layui.upload;
+        var layer = layui.layer;
+        var element = layui.element;
+        upload.render({
+            elem: '#carouselUpload',
+            url: "{:url('administrator/Index/doCarouselUpload')}",
+            field: 'carousel',
+            done: function (res) {
+                console.log(res);
+                if (res.code === 200) {
+                    layer.msg(res.msg, {icon: 6});
+                }
+                else {
+                    layer.msg(res.msg, {icon: 5});
+                }
+            }
         });
     });
 </script>

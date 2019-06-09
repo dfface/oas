@@ -32,7 +32,7 @@ class Mailer
         $this->mailer->Password   = 'gWEJjBLdAiqYJbsF';
         $this->mailer->SMTPSecure = 'ssl';
         $this->mailer->Port       = 465;
-        $this->mailer->setFrom('support@dfface.com','oas在线答疑系统');
+        $this->mailer->setFrom('support@dfface.com','OAS在线答疑系统');
     }
 
     /**
@@ -47,7 +47,7 @@ class Mailer
 
     /**
      * Method setCode
-     * @purpose 找回密码的邮件内容设置
+     * @purpose 设置找回密码邮件
      * @param $code
      * @param $name
      * @param $id
@@ -55,13 +55,20 @@ class Mailer
     public function setCode($code,$name,$id) {
         $this->mailer->isHTML(true);
         $this->mailer->Subject = "重要！在线答疑系统密码找回";
-        $this->mailer->Body = "<h3>亲爱的".$name."，你好：</h3>"
+        $this->mailer->Body = "<h3>亲爱的".$name."，您好：</h3>"
         ."您的帐号 ".$id." 正在申请密码找回。"
         ."<p>您的验证码是：<span style=\"font-size: 3rem\">".$code."</span> ，该验证码将于1小时后失效。</p>"
         ."<p>本邮件由系统自动发送，请不要直接回复！</p>"
         ."<p>© 2018-2019 北京科技大学 OAS软工课设小组</p>";
     }
 
+    /**
+     * Method setReplyRemind
+     * @purpose 设置教师回答后自动给学生发送提醒邮件的内容
+     * @param $tea_name
+     * @param $stu_name
+     * @param $que_id
+     */
     public function setReplyRemind($tea_name,$stu_name,$que_id) {
         $this->mailer->isHTML(true);
         $this->mailer->Subject = "你的问题得到".$tea_name."老师的回复了";

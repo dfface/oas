@@ -4,14 +4,10 @@
 namespace app\student\controller;
 
 
-use app\common\model\Course;
-use app\common\model\File;
 use app\common\model\Question;
 use app\common\model\Reply;
-use app\common\model\User;
 use think\Controller;
 use think\facade\Session;
-use think\Image;
 
 class Index extends Controller
 {

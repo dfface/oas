@@ -1,58 +1,47 @@
 {extend name="./templates/base.html"/}
 
 {block name="import"}
-{css href="/oas/public/static/bootstrap/css/bootstrap.css"}
-{css href="/oas/public/static/carousel.css"}
-{css href="/oas/public/static/layui/css/layui.css"}
-{css href="/oas/public/static/layui/css/admin.css"}
-{js href="/oas/public/static/jquery-3.4.1.js"}
-{js href="/oas/public/static/bootstrap/js/bootstrap.js"}
-{js href="/oas/public/static/popper.min.js"}
-{js href="/oas/public/static/layui/layui.js"}
+{css href="/static/bootstrap/css/bootstrap.css"}
+{css href="/static/carousel.css"}
+{css href="/static/layui/css/layui.css"}
+{css href="/static/layui/css/admin.css"}
+{js href="/static/jquery-3.4.1.js"}
+{js href="/static/bootstrap/js/bootstrap.js"}
+{js href="/static/popper.min.js"}
+{js href="/static/layui/layui.js"}
 {/block}
 {block name="body"}
-<style type="text/css">
-    .relative {
-        position: relative;
-        left: 10px;
-        top: 100px;
-    }</style>
-<div class="relative">
-<div class="layui-card" >
+<div class="layui-card my-5 py-5" >
     <div class="layui-card-header">待办事项</div>
     <div class="layui-card-body">
         <div class="layui-carousel layadmin-carousel layadmin-backlog" lay-anim="" lay-indicator="inside" lay-arrow="none" style="width: 100%; height: 280px;">
-            <div carousel-item="">
-                <ul class="layui-row layui-col-space10 layui-this">
-                    <li class="layui-col-xs6">
-                        <a lay-href="" class="layadmin-backlog-body">
-                            <h3>未解决问题</h3>
-                            <p><cite>{$unsolved_course}</cite></p>
-                        </a>
-                    </li>
-                    <li class="layui-col-xs6">
-                        <a lay-href="" class="layadmin-backlog-body">
-                            <h3>已解决问题</h3>
-                            <p><cite>{$solved_course}</cite></p>
-                        </a>
-                    </li>
-                    <li class="layui-col-xs6">
-                        <a href="{:url('index/Index/history')}" class="layadmin-backlog-body">
-                            <h3>回复数</h3>
-                            <p><cite>{$replys}</cite></p>
-                        </a>
-                    </li>
-                    <li class="layui-col-xs6">
-                        <a href="{:url('teacher/Index/courseList')}"  class="layadmin-backlog-body">
-                            <h3 >所教课程</h3>
-                            <p><cite>{$courses}</cite></p>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
+            <ul class="layui-row layui-col-space10 layui-this">
+                <li class="layui-col-xs6">
+                    <a class="layadmin-backlog-body">
+                        <h3>未解决问题</h3>
+                        <p><cite>{$unsolved_course}</cite></p>
+                    </a>
+                </li>
+                <li class="layui-col-xs6">
+                    <a class="layadmin-backlog-body">
+                        <h3>已解决问题</h3>
+                        <p><cite>{$solved_course}</cite></p>
+                    </a>
+                </li>
+                <li class="layui-col-xs6">
+                    <a class="layadmin-backlog-body">
+                        <h3>回复数</h3>
+                        <p><cite>{$replys}</cite></p>
+                    </a>
+                </li>
+                <li class="layui-col-xs6">
+                    <a class="layadmin-backlog-body">
+                        <h3 >所教课程</h3>
+                        <p><cite>{$courses}</cite></p>
+                    </a>
+                </li>
+            </ul>
         </div>
     </div>
-</div>
 </div>
 {/block}
