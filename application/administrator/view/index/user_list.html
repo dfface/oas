@@ -45,6 +45,9 @@
                             <a href="{:url('administrator/Index/userAdd',['role' => 1])}">
                                 <button class="layui-btn layui-btn-sm" lay-event="add" style="float:left ;margin-top:12px" >添加</button>
                             </a>
+                            <a>
+                                <button class="layui-btn layui-btn-sm test" style="float:left ;margin-top:12px">从文件导入</button>
+                            </a>
                             <div class="row justify-content-center m-1">
                                 <form class="form-inline" id="form_search_teacher" method="post" action="{:url('administrator/Index/search',['table' => 'user','role' => 1])}}">
                                     <select id="admin_search" class="custom-select my-1 mr-sm-1" name="search_field">
@@ -69,6 +72,9 @@
                         <div class="layui-btn-container">
                             <a href="{:url('administrator/Index/userAdd',['role' => 2])}">
                                 <button class="layui-btn layui-btn-sm" lay-event="add" style="float:left ;margin-top:12px" >添加</button>
+                                <a>
+                                    <button class="layui-btn layui-btn-sm test" style="float:left ;margin-top:12px">从文件导入</button>
+                                </a>
                             </a>
                             <div class="row justify-content-center m-1">
                                 <form class="form-inline"  method="post" action="{:url('administrator/Index/search',['table' => 'user','role' => 2])}}">

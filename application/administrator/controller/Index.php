@@ -222,13 +222,10 @@ class Index extends Controller
             $fileName = $info->getSaveName();
             if($fileName===""){
                 $result = ['code' => FAILURE,'msg'=>'文件名解析错误'];
-            }
-            //获取文件路径
-            $filePath = Env::get('root_path').'public'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.$fileName;
-            if($filePath==""){
-                $result = ['code' => SUCCESS,'msg'=>$filePath];
                 return json($result);
             }
+            //获取文件路径
+            $filePath = '.'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.$fileName;
             //获取文件后缀
             $suffix = $info->getExtension();
             //判断哪种类型
@@ -249,8 +246,7 @@ class Index extends Controller
             return json($result);
         }
         //载入excel文件
-
-        $excel = $reader->load("$filePath",$encode = 'utf-8');
+        $excel = $reader->load($filePath);
         //读取第一张表
         $sheet = $excel->getSheet(0);
         //获取总行数
@@ -271,7 +267,12 @@ class Index extends Controller
                 //将数据保存到数据库
             }
             $res = Db::name('user')->strict(false)->insertAll($data);
-            $result = ['code'=>SUCCESS,'msg' =>'导入成功',"data"=>""];
+            if($res) {
+                $result = ['code'=>SUCCESS,'msg' =>'导入成功',"data"=>$res];
+            }
+            else {
+                $result = ['code'=>FAILURE,'msg' =>'导入失败',"data"=>$res];
+            }
             return json($result);
 
         }elseif($type == 'take'){
