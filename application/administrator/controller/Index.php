@@ -1116,7 +1116,7 @@ class Index extends Controller
         $data = [
             'id' => input('id')
         ];
-        $carousel = reply::get($data['id']);
+        $carousel = Carousel::get($data['id']);
         $carousel->delete();
         $result = ["code" => SUCCESS, "msg" => "成功删除!"];
         return json($result);
