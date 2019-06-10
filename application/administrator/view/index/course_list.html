@@ -24,6 +24,9 @@
                             <a href="{:url('administrator/Index/courseAdd')}">
                                 <button class="layui-btn layui-btn-sm"  style="float:left ;margin-top:12px" >添加</button>
                             </a>
+                            <a>
+                                <button class="layui-btn layui-btn-sm course" style="float:left ;margin-top:12px">从文件导入</button>
+                            </a>
                             <div class="row justify-content-center m-1">
                                 <form class="form-inline" id="form_search_course" >
                                     <select class="custom-select my-1 mr-sm-1" id="search_field" name="search_field">
@@ -49,6 +52,9 @@
                         <div class="layui-btn-container">
                             <a href="{:url('administrator/Index/takeAdd')}">
                                 <button class="layui-btn layui-btn-sm" lay-event="add-take" style="float:left ;margin-top:12px">添加</button>
+                            </a>
+                            <a>
+                                <button class="layui-btn layui-btn-sm take" style="float:left ;margin-top:12px">从文件导入</button>
                             </a>
                             <div class="row justify-content-center m-1">
                                 <form class="form-inline" id="form_search_take" >
@@ -84,13 +90,51 @@
 <script>
     $(function () {
         layui.config({base:'/static/layuiTablePlug/test/js/'})
-            .use(['element','tablePlug','laydate','table'], function() {
-            var element = layui.element;
-            var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
-            var table = layui.table;
-            var form = layui.form //表单
-            var laydate = layui.laydate;
-
+            .use(['element','tablePlug','upload','laydate','table'], function() {
+                var element = layui.element;
+                var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
+                var table = layui.table;
+                var form = layui.form //表单
+                var laydate = layui.laydate;
+                var upload = layui.upload;
+                upload.render({
+                    elem:'.course',
+                    url:'/administrator/Index/batchAdd',
+                    data:{type:'course'},
+                    accept:'file',
+                    type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    field:'excel',
+                    exts:"xlsx|xls",
+                    method:'post',
+                    size:1024*5,
+                    done:function(res){
+                        if(res.code == 200){
+                            layer.msg(res.msg,{icon:6});
+                        }
+                        else{
+                            layer.msg(res.msg,{icon:5});
+                        }
+                    }
+                });
+                upload.render({
+                    elem:'.take',
+                    url:'/administrator/Index/batchAdd',
+                    data:{type:'take'},
+                    accept:'file',
+                    type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    field:'excel',
+                    exts:"xlsx|xls",
+                    method:'post',
+                    size:1024*5,
+                    done:function(res){
+                    if(res.code == 200){
+                        layer.msg(res.msg,{icon:6});
+                    }
+                    else{
+                        layer.msg(res.msg,{icon:5});
+                    }
+                }
+            });
             var fn1 = function (field) {
                 return function (data) {
                     // return data[field];
