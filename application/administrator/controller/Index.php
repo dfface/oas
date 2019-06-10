@@ -1252,7 +1252,8 @@ class Index extends Controller
                 $data[$key]['use_id']           = $reply->use_id;
                 $data[$key]['status']         = $reply->status;
                 $data[$key]['content']           = $reply->content;
-                $data[$key]['status']         = $reply->status;
+                $data[$key]['like_count']         = $reply->like_count;
+                $data[$key]['dislike_count']         = $reply->dislike_count;
             }
             //适应layui接口
             $result = ['code' => 0 ,"msg" =>"成功","count" => $replies_count, "data"=>$data];
