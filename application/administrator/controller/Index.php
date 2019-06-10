@@ -254,7 +254,6 @@ class Index extends Controller
         //获取总列数
         $col_num = $sheet->getHighestColumn();
         $data = []; //数组形式获取表格数据
-
         if($type == 'user'){
             for ($i = 1; $i <= $row_num; $i ++) {
                 $data[$i]['id']  = $sheet->getCell("A".$i)->getValue();
@@ -266,7 +265,8 @@ class Index extends Controller
                 $data[$i]['profile'] = $sheet->getCell("G".$i)->getValue();
                 //将数据保存到数据库
             }
-            $res = Db::name('user')->strict(false)->insertAll($data);
+            $user = new User();
+            $res = $user->saveAll($data,false);
             if($res) {
                 $result = ['code'=>SUCCESS,'msg' =>'导入成功',"data"=>$res];
             }
@@ -280,8 +280,14 @@ class Index extends Controller
                 $data[$i]['stu_id']  = $sheet->getCell("A".$i)->getValue();
                 $data[$i]['cou_id'] = $sheet->getCell("B".$i)->getValue();
             }
-            $res = Db::name('take')->strict(false)->insertAll($data);
-            $result = ['code'=>SUCCESS,'msg' =>'导入成功',"data"=>""];
+            $take = new Take();
+            $res = $take->saveAll($data,false);
+            if($res) {
+                $result = ['code'=>SUCCESS,'msg' =>'导入成功',"data"=>$res];
+            }
+            else {
+                $result = ['code'=>FAILURE,'msg' =>'导入失败',"data"=>$res];
+            }
             return json($result);
         }elseif($type == 'course'){
             for ($i = 1; $i <= $row_num; $i ++) {
@@ -293,11 +299,16 @@ class Index extends Controller
                 $data[$i]['status'] = $sheet->getCell("F".$i)->getValue();
                 //将数据保存到数据库
             }
+            $course = new Course();
+            $res = $course->saveAll($data,false);
+            if($res) {
+                $result = ['code'=>SUCCESS,'msg' =>'导入成功',"data"=>$res];
+            }
+            else {
+                $result = ['code'=>FAILURE,'msg' =>'导入失败',"data"=>$res];
+            }
             unlink( $filePath);
-            $res = Db::name('course')->insertAll($data);
-            $result = ['code'=>SUCCESS,'msg' =>'导入成功',"data"=>""];
             return json($result);
-
         }
 
     }
@@ -336,10 +347,7 @@ class Index extends Controller
             if ($email === "") {
                 // 没有更新邮箱
             }
-            elseif(!strtr($email,"@")){
-                $result= ["code" => FAILURE, "msg" => "email中缺少@符号"];
-                return json($result);
-            }else{
+            else{
                 $user->email = $email;
             }
             if ($name === "") {
@@ -1240,9 +1248,9 @@ class Index extends Controller
             $data = [];
             foreach ($replies as $key => $reply){
                 $data[$key]['id']           = $reply->id;
-                $data[$key]['stu_id']         = $reply->stu_id;
-                $data[$key]['course_id']           = $reply->course_id;
-                $data[$key]['title']         = $reply->title;
+                $data[$key]['que_id']         = $reply->que_id;
+                $data[$key]['use_id']           = $reply->use_id;
+                $data[$key]['status']         = $reply->status;
                 $data[$key]['content']           = $reply->content;
                 $data[$key]['status']         = $reply->status;
             }
