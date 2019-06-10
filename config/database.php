@@ -13,11 +13,11 @@ return [
     // 数据库类型
     'type'            => 'mysql',
     // 服务器地址
-    'hostname'        => 'docker.for.mac.localhost',
+    'hostname'        => '172.18.0.1',
     // 数据库名
     'database'        => 'oas',
     // 用户名
-    'username'        => 'handy',
+    'username'        => 'oas',
     // 密码
     'password'        => 'Passw0rd!',
     // 端口

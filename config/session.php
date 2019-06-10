@@ -23,11 +23,10 @@ return [
     'type'           => 'redis',  // 更改
     // 是否自动开启 SESSION
     'auto_start'     => true,
-    'host'           => 'docker.for.mac.localhost',  // 增加
+    'host'           => '172.18.0.1',  // 增加
     'port'           => 6379,  // 增加
     'password'       => 'Passw0rd!',  // 增加 redis 密码 需要设置 CONFIG set requirepass ""
     'expire'         => 3600,  // session过期时间 一小时，但是token手动存在redis中可以永不过期
     'use_cookies'    => true,  // 设置使用 cookies
     "name"           => 'PHPSESSID',  // （不）更改 session id 默认的 PHPSESSID，为了配合 cookie 的作用域
-
 ];

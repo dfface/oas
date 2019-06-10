@@ -28,7 +28,7 @@ return [
     ],
     'redis'      => [
         'type'   => 'redis',
-        'host'   => 'docker.for.mac.localhost',  // 增加 redis 主机
+        'host'   => '172.18.0.1',  // 增加 redis 主机
         'port'   => 6379,  // 增加 redis 端口
         'password'   => 'Passw0rd!',  // 增加 redis 密码
         'expire'     => 0,  // 表示永久有效
