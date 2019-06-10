@@ -21,7 +21,7 @@ class Index extends Controller
      * @return mixed
      */
     public function test() {
-        return $this->fetch();
+        echo phpinfo();
     }
 
     /**
