@@ -381,7 +381,7 @@ class Index extends Controller
         $info = $file->move('./images');
         if ($info) {
             // 注意图片的地址
-            $path = 'http://oas.com/images/'.$info->getSaveName();
+            $path = '/images/'.$info->getSaveName();
             // 存入数据库 修改 session
             $user = User::get($id);
             $user->avatar = $path;
